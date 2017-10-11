@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[9]:
 
 from urllib.parse import urlencode
 import requests
@@ -14,7 +14,7 @@ from fake_useragent import UserAgent
 import sys
 
 
-# In[2]:
+# In[10]:
 
 class CmpyinfoCrawlerError(Exception):
     def __init__(self, prefix, sta=0):
@@ -34,12 +34,56 @@ class CmpyinfoCrawlerError(Exception):
         return s
 
 
-# In[3]:
+# In[11]:
 
 import proxypool
+#p = proxypool()
+#p.na_proxy()
+#print(p.proxy_set)
+#p.filter_proxy()
 
 
-# In[5]:
+# In[12]:
+
+"""
+import proxypool
+
+class public_proxy_pool:
+    def __init__(self, tick = 300, size = 8):
+        self.sta = time.time()
+        self.end = time.time()
+        self.pooling = 0
+        self.tick = tick
+        self.proxypool = list()
+        self.proxy = dict()
+        self.size = size
+
+    def check_tick(self):
+        if self.pooling - self.sta >= self.tick or self.pooling == 0:
+            self.pooling = time.time()
+            return True
+        else:
+            return False
+    
+    def proxyip(self, which=0):
+        #import random
+        if self.check_tick():
+            self.new_proxies()
+        
+        #if mode = 0:
+            #self.proxy['http'] = random.choice(self.proxypool)
+        #else:
+        self.proxy['http'] = self.proxypool[which]
+        return self.proxy
+        
+    def new_proxies(self):
+        import proxypool
+        p = proxypool.get_proxies()
+        self.proxypool = proxypool.proxy_pool(p)[0 : self.size]
+"""
+
+
+# In[13]:
 
 class back_log:
     def __init__(self, flush=False, flush_threshold=1000, first_line='',log_format='', fname =''):
@@ -77,7 +121,7 @@ class back_log:
                 self.queue = list()        
 
 
-# In[6]:
+# In[16]:
 
 from collections import defaultdict
 from datetime import datetime
@@ -186,8 +230,8 @@ class cmpyinfo_crawler:
         #self.proxy_pool = [None, None]        
         #self.proxy_set = bool(proxy)
         self.proxy_update = True
-        self.proxy_tick = 1800
-        #self.proxy_tick = 120
+        #self.proxy_tick = 1800
+        self.proxy_tick = 120
         #self.proxy_tick = 300
         #self.new_proxies()
         #self.proxyip(mode = 1, top = 0)
@@ -430,7 +474,7 @@ class cmpyinfo_crawler:
             
         except requests.exceptions.ProxyError as err:
             self.tasklog.log(mode='manual', in_log = "Exception requests.ProxyError @ first_connection(), remove proxy")
-            self.quick_change_proxy()
+            self.change_proxy()
             self.response = self.session.post(url1, headers=request_header1, data=self.form_data_url1, proxies=self.proxy)
             return False            
         except Exception as err:
@@ -529,7 +573,7 @@ class cmpyinfo_crawler:
             self.response = self.session.post(url2, headers=request_header2,data=form_data_url2, proxies=self.proxy) # first connection有機會重新設定self.proxy, second connection直接用
         except requests.exceptions.ProxyError as err:
             self.tasklog.log(mode='manual', in_log = "Exception requests.ProxyError @ second_connection(), remove proxy")
-            self.quick_change_proxy()
+            self.change_proxy()
             return False
         except Exception as err:
             self.exception_happened = True
@@ -619,11 +663,35 @@ class cmpyinfo_crawler:
     
     def renew_poroxypool(self):
         self.proxypool.reset_proxy()
-        self.proxypool.asia_proxy()
-        self.proxypool.filter_proxy()
-        proxy_str = 'resolved ' + len(self.proxypool.proxy_list)
+        try:
+            self.proxypool.asia_proxy()
+            if len(self.proxypool.proxy_set) == 0:
+                raise CmpyinfoCrawlerError('ResolveProxyError', self.sta)
+        except CmpyinfoCrawlerError as cerr:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.asia_proxy(), retry proxypool.world_proxy()")
+            print(ccerr)
+            self.tasklog.log(mode='manual', in_log = str(ccerr))
+            self.tasklog.log_flush()
+            
+            try:
+                self.proxypool.world_proxy()
+                if len(self.proxypool.proxy_set) == 0:
+                    raise CmpyinfoCrawlerError('ResolveProxyError', self.sta)                
+            except:
+                self.exception_happened = True
+                self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.world_proxy(), you can only use local ip")
+                print(ccerr)
+                self.tasklog.log(mode='manual', in_log = str(ccerr))
+                self.tasklog.log_flush()
+                return
+            
+                
+        #self.proxypool.filter_proxy()
+        proxy_str = 'resolved' + str(len(self.proxypool.proxy_set)) + 'proxies'
         print(proxy_str)
         self.tasklog.log(mode='manual', in_log = proxy_str)
+        return True
 
     def change_proxy(self):
         #ratio = 5 # 5 proxies vs 1 None
@@ -633,8 +701,23 @@ class cmpyinfo_crawler:
         if self.proxy_i % self.proxy_ratio == 0:
             self.proxy = None
         else:
-            self.renew_poroxypool()
-            self.proxy = random.choice(self.proxypool.proxy_list)
+            # 如果舊的還沒用完，就拿來用
+            if not self.proxypool.proxy_set:
+                self.renew_poroxypool()
+            
+            while self.proxypool.proxy_set:
+                self.proxy = self.proxypool.proxy_set.pop()
+                if self.proxypool.check_this_proxy(self.proxy):
+                    break
+                # 檢查失敗就繼續拿下一個
+            else:
+                # 順利結束while，表示self.proxypool.proxy_set都是爛的，所以改回None
+                self.proxy = None
+                #self.renew_poroxypool()
+                #if self.renew_poroxypool():            
+                #    self.proxy = self.proxypool.proxy_set.pop()
+                #else:
+                #    self.proxy = None
         
         #self.proxy = self.proxy_list[1]
         #self.proxy_pool = self.proxy_pool[1:] + self.proxy_pool[0:1]
@@ -643,16 +726,7 @@ class cmpyinfo_crawler:
         self.tasklog.log(mode='manual', in_log = proxy_str)
         self.proxy_update = True
         
-    def quick_change_proxy(self):
-        self.proxypool.proxy_list.remove(self.proxy);
-        if not self.proxypool.proxy_list:
-            self.renew_poroxypool()
-        
-        self.proxy = random.choice(self.proxypool.proxy_list)
-        proxy_str = 'proxy change to ' + str(self.proxy) + ' @ ' + self.exectime('task execution time: ')
-        print(proxy_str)
-        self.tasklog.log(mode='manual', in_log = proxy_str)
-        self.proxy_update = True
+
 
     def random_sleep(self):
         import random
@@ -1626,6 +1700,8 @@ class parser_cmpy_type:
 
 # In[ ]:
 
+# In[ ]:
+
 import configparser
 tasknum = sys.argv[1]
 
@@ -1653,5 +1729,4 @@ for k in range(1, len(config['TASK'])):
     crawler.parse_and_gen_schema(crawler.pageStart, crawler.pageEnd)
     crawler.session.close()
     #del crawler
-    
 

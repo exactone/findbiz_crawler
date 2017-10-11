@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[9]:
 
 from urllib.parse import urlencode
 import requests
@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# In[2]:
+# In[25]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -37,7 +37,7 @@ class proxypool:
     country_world = country_asia + country_eu + country_na
     proxy_list = list()
     proxy_set = set()
-    proxy_set_max = 50
+    proxy_set_max = 15
     #proxy_re = re.compile('[0-9]+(?:\.[0-9]+){3}:\d{2,4}')
     
     def __init__(self):
@@ -99,7 +99,7 @@ class proxypool:
             ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
             port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
             proxypool.proxy_set.add(ip+':'+port)
-        print('page 0 done')
+        #print('page 0 done')
 
     
         # step 6. resolve trs for the rest pages
@@ -120,7 +120,7 @@ class proxypool:
                 if len(proxypool.proxy_set) > proxypool.proxy_set_max:
                     return
             time.sleep(5)
-            print('page', i,'done')
+            #print('page', i,'done')
     
     def get_proxy3(self):
         self.new_session()
@@ -197,27 +197,30 @@ class proxypool:
                     connection_score.append(0)
                     break
 
-            else:   
-                #print(connection_score)
-                if sum(connection_score) < 4:
-                    bad_proxy_set.add(p)
+              
+            #print(connection_score)
+            if sum(connection_score) < 4:
+                bad_proxy_set.add(p)
         else:
             proxypool.proxy_set = proxypool.proxy_set - bad_proxy_set
             self.proxy_set_to_proxy_list()
                 
-    
-                
+        
+    def check_this_proxy(self, p):
+        connection_score = list()
+        for t in proxypool.proxy_test:
+            self.new_session()
+            try:
+                self.response = self.session.get(t, timeout=30, proxies={'http':p})
+                print('checking', p, t, self.response)
+                connection_score.append(1 if self.response.status_code == 200 else 0)
+            except Exception as err:
+                connection_score.append(0)
+                break
 
-
-# In[3]:
-
-#p = proxypool()
-#p.asia_proxy()
-#print(p.proxy_set)
-#p.filter_proxy()
-
-
-# In[ ]:
-
-
+               
+        if sum(connection_score) < 4:
+            return False
+        else:
+            return True
 
