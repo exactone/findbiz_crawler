@@ -99,7 +99,7 @@ class proxypool:
             ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
             port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
             proxypool.proxy_set.add(ip+':'+port)
-        print('page 0 done')
+        #print('page 0 done')
 
     
         # step 6. resolve trs for the rest pages
@@ -120,7 +120,7 @@ class proxypool:
                 if len(proxypool.proxy_set) > proxypool.proxy_set_max:
                     return
             time.sleep(5)
-            print('page', i,'done')
+            #print('page', i,'done')
     
     def get_proxy3(self):
         self.new_session()
