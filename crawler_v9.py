@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[9]:
+# In[1]:
 
 from urllib.parse import urlencode
 import requests
@@ -14,7 +14,7 @@ from fake_useragent import UserAgent
 import sys
 
 
-# In[10]:
+# In[2]:
 
 class CmpyinfoCrawlerError(Exception):
     def __init__(self, prefix, sta=0):
@@ -34,7 +34,7 @@ class CmpyinfoCrawlerError(Exception):
         return s
 
 
-# In[11]:
+# In[3]:
 
 import proxypool
 #p = proxypool()
@@ -43,7 +43,7 @@ import proxypool
 #p.filter_proxy()
 
 
-# In[12]:
+# In[4]:
 
 """
 import proxypool
@@ -83,7 +83,7 @@ class public_proxy_pool:
 """
 
 
-# In[13]:
+# In[5]:
 
 class back_log:
     def __init__(self, flush=False, flush_threshold=1000, first_line='',log_format='', fname =''):
@@ -121,7 +121,7 @@ class back_log:
                 self.queue = list()        
 
 
-# In[16]:
+# In[6]:
 
 from collections import defaultdict
 from datetime import datetime
@@ -230,8 +230,8 @@ class cmpyinfo_crawler:
         #self.proxy_pool = [None, None]        
         #self.proxy_set = bool(proxy)
         self.proxy_update = True
-        #self.proxy_tick = 1800
-        self.proxy_tick = 120
+        self.proxy_tick = 1200
+        #self.proxy_tick = 120
         #self.proxy_tick = 300
         #self.new_proxies()
         #self.proxyip(mode = 1, top = 0)
@@ -688,7 +688,7 @@ class cmpyinfo_crawler:
             
                 
         #self.proxypool.filter_proxy()
-        proxy_str = 'resolved' + str(len(self.proxypool.proxy_set)) + 'proxies'
+        proxy_str = 'resolved ' + str(len(self.proxypool.proxy_set)) + ' proxies'
         print(proxy_str)
         self.tasklog.log(mode='manual', in_log = proxy_str)
         return True
@@ -1008,7 +1008,7 @@ class cmpyinfo_crawler:
         return self.results
 
 
-# In[ ]:
+# In[7]:
 
 import copy
 
@@ -1698,7 +1698,35 @@ class parser_cmpy_type:
             
 
 
-# In[ ]:
+# In[8]:
+
+import configparser
+config = configparser.ConfigParser()
+config.read('./task_ini/instance42_job.ini')
+#config['TASK']['1']
+
+task = config['TASK']
+for k in range(1, len(config['TASK'])):
+    t = eval(task[str(k)])
+
+    print("======================================")
+    print("task ", k, ": ", t[0], "@", t[1], "From page", t[2], "to", t[3])
+    print("======================================")
+    crawler = cmpyinfo_crawler(t[0], qryType = t[1], pageStart=t[2], pageEnd=t[3])
+    
+    crawler.qryCond = t[0]
+    crawler.qryType = t[1]
+    #crawler.set_form_data_url1(mode = 0, currentPage = 1)
+    crawler.set_form_data_url1(mode = 0, currentPage = crawler.pageStart)
+    crawler.first_connection()
+    #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
+    crawler.resolve_page()
+    #crawler.parse_and_gen_schema(1, crawler.totalPage)
+    crawler.parse_and_gen_schema(crawler.pageStart, crawler.pageEnd)
+    crawler.session.close()
+    #del crawler
+    
+
 
 # In[ ]:
 
@@ -1729,4 +1757,9 @@ for k in range(1, len(config['TASK'])):
     crawler.parse_and_gen_schema(crawler.pageStart, crawler.pageEnd)
     crawler.session.close()
     #del crawler
+
+
+# In[ ]:
+
+
 
