@@ -1699,34 +1699,7 @@ class parser_cmpy_type:
 
 
 # In[8]:
-
-import configparser
-config = configparser.ConfigParser()
-config.read('./task_ini/instance42_job.ini')
-#config['TASK']['1']
-
-task = config['TASK']
-for k in range(1, len(config['TASK'])):
-    t = eval(task[str(k)])
-
-    print("======================================")
-    print("task ", k, ": ", t[0], "@", t[1], "From page", t[2], "to", t[3])
-    print("======================================")
-    crawler = cmpyinfo_crawler(t[0], qryType = t[1], pageStart=t[2], pageEnd=t[3])
     
-    crawler.qryCond = t[0]
-    crawler.qryType = t[1]
-    #crawler.set_form_data_url1(mode = 0, currentPage = 1)
-    crawler.set_form_data_url1(mode = 0, currentPage = crawler.pageStart)
-    crawler.first_connection()
-    #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
-    crawler.resolve_page()
-    #crawler.parse_and_gen_schema(1, crawler.totalPage)
-    crawler.parse_and_gen_schema(crawler.pageStart, crawler.pageEnd)
-    crawler.session.close()
-    #del crawler
-    
-
 
 # In[ ]:
 
