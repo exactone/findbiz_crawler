@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[9]:
 
 from urllib.parse import urlencode
 import requests
@@ -14,7 +14,7 @@ from fake_useragent import UserAgent
 import sys
 
 
-# In[2]:
+# In[10]:
 
 class CmpyinfoCrawlerError(Exception):
     def __init__(self, prefix, sta=0):
@@ -34,7 +34,7 @@ class CmpyinfoCrawlerError(Exception):
         return s
 
 
-# In[3]:
+# In[11]:
 
 import proxypool
 #p = proxypool()
@@ -43,7 +43,7 @@ import proxypool
 #p.filter_proxy()
 
 
-# In[4]:
+# In[12]:
 
 """
 import proxypool
@@ -83,7 +83,7 @@ class public_proxy_pool:
 """
 
 
-# In[5]:
+# In[13]:
 
 class back_log:
     def __init__(self, flush=False, flush_threshold=1000, first_line='',log_format='', fname =''):
@@ -174,7 +174,8 @@ class cmpyinfo_crawler:
     
     #proxy = proxypool()
     
-    def __init__(self, qryCond, qryType, pageStart=1, pageEnd=1):
+    def __init__(self, qryCond, qryType, pageStart=1, pageEnd=1, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'):
+        self.path_phantomjs = path_phantomjs
         self.session = None
         self.pageStart = pageStart 
         self.pageNow = pageStart
@@ -223,7 +224,7 @@ class cmpyinfo_crawler:
         #self.tick = 300
         
         #self.proxy_pool = [{'http':'proxy.hinet.net:80'}, None]
-        self.proxypool = proxypool.proxypool()
+        self.proxypool = proxypool.proxypool(path_phantomjs=self.path_phantomjs)
         self.proxy_ratio = 5 # 5 proxies vs 1 None
         self.proxy_i = 0
         self.proxy = None
@@ -1732,6 +1733,7 @@ for k in range(1, len(config['TASK'])):
 
 import configparser
 tasknum = sys.argv[1]
+path_phantomjs = sys.argv[2]
 
 config = configparser.ConfigParser()
 config.read('./task_ini/instance{}_job.ini'.format(tasknum))
@@ -1744,7 +1746,7 @@ for k in range(1, len(config['TASK'])):
     print("======================================")
     print("task ", k, ": ", t[0], "@", t[1], "From page", t[2], "to", t[3])
     print("======================================")
-    crawler = cmpyinfo_crawler(t[0], qryType = t[1], pageStart=t[2], pageEnd=t[3])
+    crawler = cmpyinfo_crawler(t[0], qryType = t[1], pageStart=t[2], pageEnd=t[3], path_phantomjs=path_phantomjs)
     
     crawler.qryCond = t[0]
     crawler.qryType = t[1]

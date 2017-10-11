@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# In[25]:
+# In[35]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -40,9 +40,10 @@ class proxypool:
     proxy_set_max = 15
     #proxy_re = re.compile('[0-9]+(?:\.[0-9]+){3}:\d{2,4}')
     
-    def __init__(self):
+    def __init__(self, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'):
         self.session = None
         self.response = None
+        self.path_phantomjs = path_phantomjs
         
     def new_session(self):
         if self.session is not None:
@@ -153,28 +154,28 @@ class proxypool:
     def world_proxy(self):
         self.get_proxy1()
         for c in proxypool.country_world:
-            self.get_proxy2()
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
             
         self.get_proxy3()
         self.get_proxy4()
     
     def eu_proxy(self):
         for c in proxypool.country_eu:
-            self.get_proxy2(country = c)
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
 
     def na_proxy(self):
         for c in proxypool.country_na:
-            self.get_proxy2(country = c)
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
         self.get_proxy3()
         
     def taiwan_proxy(self):
         self.reset_proxy()
-        self.get_proxy2(country ='Taiwan')
+        self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country ='Taiwan')
         self.get_proxy4()
     
     def asia_proxy(self):
         for c in proxypool.country_asia:
-            self.get_proxy2(country = c)
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
         self.get_proxy4()
         
     def filter_proxy(self):
