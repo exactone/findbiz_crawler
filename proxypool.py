@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[6]:
+# In[1]:
 
 from urllib.parse import urlencode
 import requests
@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# In[ ]:
+# In[2]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -99,6 +99,7 @@ class proxypool:
             ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
             port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
             proxypool.proxy_set.add(ip+':'+port)
+        print('page 0 done')
 
     
         # step 6. resolve trs for the rest pages
@@ -119,7 +120,7 @@ class proxypool:
                 if len(proxypool.proxy_set) > proxypool.proxy_set_max:
                     return
             time.sleep(5)
-
+            print('page', i,'done')
     
     def get_proxy3(self):
         self.new_session()
@@ -184,7 +185,7 @@ class proxypool:
                 self.new_session()
                 try:
                     self.response = self.session.get(t, timeout=30, proxies={'http':p})
-                    #print(p, t, self.response)
+                    print('checking', p, t, self.response)
                     connection_score.append(1 if self.response.status_code == 200 else 0)
 
                 #except requests.exceptions.ProxyError as err:
@@ -208,12 +209,12 @@ class proxypool:
                 
 
 
-# In[ ]:
+# In[3]:
 
-p = proxypool()
-p.asia_proxy()
-print(p.proxy_set)
-p.filter_proxy()
+#p = proxypool()
+#p.asia_proxy()
+#print(p.proxy_set)
+#p.filter_proxy()
 
 
 # In[ ]:
