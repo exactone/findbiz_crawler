@@ -722,6 +722,7 @@ class cmpyinfo_crawler:
         
         #self.proxy = self.proxy_list[1]
         #self.proxy_pool = self.proxy_pool[1:] + self.proxy_pool[0:1]
+        self.proxy = {'http':self.proxy} if self.proxy is not None else None
         proxy_str = 'proxy change to ' + str(self.proxy) + ' @ ' + self.exectime('task execution time: ')
         print(proxy_str)
         self.tasklog.log(mode='manual', in_log = proxy_str)
