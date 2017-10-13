@@ -1793,6 +1793,9 @@ for t in task:
     crawler.resolve_page()
     crawler.parse_and_gen_schema(1, crawler.totalPage)
     crawler.proxy_monitor()
+    if proxy_tick > 3600:
+        import random
+        time.sleep(random.randint(50,70))
     #crawler.change_proxy()
     #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
     #crawler.session.close()
