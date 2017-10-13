@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# In[3]:
+# In[5]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -69,6 +69,7 @@ class proxypool:
 
 
     def get_proxy2(self, country ='Taiwan'):
+        #PhantomJs_executable_path='/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
         def clean_text(text):
             import re
             if text is None:
@@ -177,7 +178,7 @@ class proxypool:
     
     def asia_proxy(self):
         for c in proxypool.country_asia:
-            self.get_proxy2(country = c)
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
         self.get_proxy4()
         
     def filter_proxy(self):

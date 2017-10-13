@@ -121,7 +121,7 @@ class back_log:
                 self.queue = list()        
 
 
-# In[14]:
+# In[20]:
 
 from collections import defaultdict
 from datetime import datetime
@@ -759,6 +759,7 @@ class cmpyinfo_crawler:
         print(text)
         self.tasklog.log(mode='manual', in_log = 'task resolved: '+ text)
         text = re.sub(r'[\s共筆分頁,]', r'', text)
+        print(text)
         self.totalCount, self.totalPage = [int(t) for t in text.split('、')]
     
     def h3_info_collector(self, pageStart, pageEnd):
@@ -1708,12 +1709,51 @@ class parser_cmpy_type:
             
 
 
-# In[16]:
+# In[24]:
+
+import pickle
+import proxypool
+#import configparser
+#config = configparser.ConfigParser()
+#config.read('./task_ini/instance2_job.ini')
+task_dir = './task_ini/'
+task = pickle.load(open(task_dir+'instance1_v10_job.pkl', 'rb'))
+#config['TASK']['1']
+task_proxy = proxypool.proxypool()
+task_proxy.proxy_set_max = 10
+task_proxy.world_proxy()
+
+for t in task:
+    print("======================================")
+    print("task ", t[0], ": ", t[1], "@", t[2])
+    print("======================================")
+    
+    
+    crawler = cmpyinfo_crawler(t[1], qryType = t[2], pageStart=t[3], pageEnd=t[4])
+    
+    crawler.proxy = task_proxy.random_choice_one_proxy()
+    print('proxy changed to', crawler.proxy)
+    if not task_proxy.proxy_set:
+        task_proxy.world_proxy()
+    
+    crawler.qryCond = t[1]
+    crawler.qryType = t[2]
+    #crawler.set_form_data_url1(mode = 0, currentPage = 1)
+    
+    crawler.set_form_data_url1(mode = 0, currentPage = 1)
+    if not crawler.first_connection():
+        continue
+    #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
+    crawler.resolve_page()
+    crawler.parse_and_gen_schema(1, crawler.totalPage)
+    #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
+    crawler.session.close()
+    #del crawler
+    
 
 
 # In[ ]:
 
-import configparser
 tasknum = sys.argv[1]
 path_phantomjs = sys.argv[2]
 
