@@ -1,246 +1,239 @@
-<!DOCTYPE HTML>
-<html>
 
-<head>
-    <meta charset="utf-8">
+# coding: utf-8
 
-    <title>proxypool.py (editing)</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/static/base/images/favicon.ico?v=30780f272ab4aac64aa073a841546240">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <link rel="stylesheet" href="/static/components/jquery-ui/themes/smoothness/jquery-ui.min.css?v=9b2c8d3489227115310662a343fce11c" type="text/css" />
-    <link rel="stylesheet" href="/static/components/jquery-typeahead/dist/jquery.typeahead.min.css?v=7afb461de36accb1aa133a1710f5bc56" type="text/css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+# In[1]:
+
+from urllib.parse import urlencode
+import requests
+from bs4 import BeautifulSoup
+from lxml import etree
+import time
+import re
+from fake_useragent import UserAgent
+
+import sys
+
+
+import requests
+from lxml import etree
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+
+# In[2]:
+
+class proxypool:
+    proxy_html = ['http://free-proxy-list.net', 
+                  'http://www.gatherproxy.com/proxylist/country/?c=', 
+                  'https://www.us-proxy.org/',  
+                  'http://www.proxylisty.com/country/Taiwan-ip-list']
+    proxy_test = ['http://www.google.com.tw', 'http://www.google.co.jp', 'http://www.yahoo.com', 'http://findbiz.nat.gov.tw/fts/query/QueryBar/queryInit.do']
+    country_asia = ['Taiwan', 'Japan', 'Singapore', 'Korea']
+    country_eu = ['Ukraine', 'Russia', 'France', 'Germany']
+    country_na = ['United%20States', 'Canada']
+    country_world = country_asia + country_eu + country_na
+    proxy_list = list()
+    proxy_set = set()
+    proxy_set_max = 15
+    #proxy_re = re.compile('[0-9]+(?:\.[0-9]+){3}:\d{2,4}')
     
+    def __init__(self, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'):
+        self.session = None
+        self.response = None
+        self.path_phantomjs = path_phantomjs
+        
+    def new_session(self):
+        if self.session is not None:
+            self.session.close()
+        
+        self.session = requests.Session()
+    def reset_proxy(self):
+        proxypool.proxy_set = set()
+        
+    def proxy_set_to_proxy_list(list):
+        proxypool.proxy_list = [{'http':p} for p in proxypool.proxy_set]
     
-<link rel="stylesheet" href="/static/components/codemirror/lib/codemirror.css?v=2336fb49f85e9fa887ada9af35223dce">
-<link rel="stylesheet" href="/static/components/codemirror/addon/dialog/dialog.css?v=c89dce10b44d2882a024e7befc2b63f5">
+    def get_proxy1(self):
+        self.new_session()
+        self.response = self.session.get(proxypool.proxy_html[0])
+        selector = etree.HTML(self.response.content)
+        trs = selector.xpath('//*[@id="proxylisttable"]/tbody/tr')
+        for tr in trs:
+            tds = tr.xpath('./td')
+            ip = tds[0].text
+            port = tds[1].text
+            proxypool.proxy_set.add(ip+':'+port)
 
-    <link rel="stylesheet" href="/static/style/style.min.css?v=f6c09475baf6beabd41f8fe518601204" type="text/css"/>
-    
 
-    <link rel="stylesheet" href="/custom/custom.css" type="text/css" />
-    <script src="/static/components/es6-promise/promise.min.js?v=f004a16cb856e0ff11781d01ec5ca8fe" type="text/javascript" charset="utf-8"></script>
-    <script src="/static/components/requirejs/require.js?v=6da8be361b9ee26c5e721e76c6d4afce" type="text/javascript" charset="utf-8"></script>
-    <script>
-      require.config({
-          
-          urlArgs: "v=20171011213147",
-          
-          baseUrl: '/static/',
-          paths: {
-            'auth/js/main': 'auth/js/main.min',
-            custom : '/custom',
-            nbextensions : '/nbextensions',
-            kernelspecs : '/kernelspecs',
-            underscore : 'components/underscore/underscore-min',
-            backbone : 'components/backbone/backbone-min',
-            jquery: 'components/jquery/jquery.min',
-            bootstrap: 'components/bootstrap/js/bootstrap.min',
-            bootstraptour: 'components/bootstrap-tour/build/js/bootstrap-tour.min',
-            'jquery-ui': 'components/jquery-ui/ui/minified/jquery-ui.min',
-            moment: 'components/moment/moment',
-            codemirror: 'components/codemirror',
-            termjs: 'components/term.js/src/term',
-            typeahead: 'components/jquery-typeahead/dist/jquery.typeahead'
-          },
-	  map: { // for backward compatibility
-	    "*": {
-		"jqueryui": "jquery-ui",
-	    }
-	  },
-          shim: {
-            typeahead: {
-              deps: ["jquery"],
-              exports: "typeahead"
-            },
-            underscore: {
-              exports: '_'
-            },
-            backbone: {
-              deps: ["underscore", "jquery"],
-              exports: "Backbone"
-            },
-            bootstrap: {
-              deps: ["jquery"],
-              exports: "bootstrap"
-            },
-            bootstraptour: {
-              deps: ["bootstrap"],
-              exports: "Tour"
-            },
-            "jquery-ui": {
-              deps: ["jquery"],
-              exports: "$"
-            }
-          },
-          waitSeconds: 30,
-      });
+    def get_proxy2(self, PhantomJs_executable_path='/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs', country ='Taiwan'):
+        def clean_text(text):
+            import re
+            if text is None:
+                text = ''
+                return text
+        
+            text = text.encode('latin_1', errors='ignore').decode('utf8', errors='ignore')
+            text = re.sub(r'[\t\n\r]', r'', text)
+            return text
+        # step 1. use PhantomJs to get .js rendered content
+        browser = webdriver.PhantomJS(executable_path = PhantomJs_executable_path)
+        browser.get(proxypool.proxy_html[1]+country)
 
-      require.config({
-          map: {
-              '*':{
-                'contents': 'services/contents',
-              }
-          }
-      });
+        # step 2. click "Show Full List" button to generate full proxies list
+        element = WebDriverWait(browser, 1).until(
+            EC.presence_of_element_located((By.XPATH, '//div[@id="body"]/form/p/input[@type="submit" and @class="button"]')))
+        element.click()
+        
+        # step 3. generate selector
+        selector = etree.HTML(browser.page_source)
 
-      define("bootstrap", function () {
-          return window.$;
-      });
+        # step 4. resolve how many pages
+        pages = selector.xpath('//div[@id="body"]/form[@id="psbform"]/div[@class="pagenavi"]/a')
 
-      define("jquery", function () {
-          return window.$;
-      });
-
-      define("jqueryui", function () {
-          return window.$;
-      });
-
-      define("jquery-ui", function () {
-          return window.$;
-      });
-      // error-catching custom.js shim.
-      define("custom", function (require, exports, module) {
-          try {
-              var custom = require('custom/custom');
-              console.debug('loaded custom.js');
-              return custom;
-          } catch (e) {
-              console.error("error loading custom.js", e);
-              return {};
-          }
-      })
-    </script>
+        # setp 5. resolve trs for first page
+        trs = selector.xpath('//div[@class="proxy-list"]/table[@id="tblproxy"]/tbody/tr')  
+        for tr in trs[2:]:
+            tds = tr.xpath('./td')
+            ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
+            port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
+            proxypool.proxy_set.add(ip+':'+port)
+        #print('page 0 done')
 
     
+        # step 6. resolve trs for the rest pages
+        for i, page in enumerate(pages, 2):
+            # step 6-1. click nextpage's link
+            element = WebDriverWait(browser, 1).until(
+                EC.presence_of_element_located((By.XPATH, '//div[@id="body"]/form[@id="psbform"]/div[@class="pagenavi"]/a[@href="#{}"]'.format(i))))
+            element.click()
+            
+            # step 6-2. resolve trs for ith page
+            selector = etree.HTML(browser.page_source)
+            trs = selector.xpath('//div[@class="proxy-list"]/table[@id="tblproxy"]/tbody/tr')
+            for tr in trs[2:]:
+                tds = tr.xpath('./td')
+                ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
+                port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
+                proxypool.proxy_set.add(ip+':'+port)
+                if len(proxypool.proxy_set) > proxypool.proxy_set_max:
+                    return
+            time.sleep(5)
+            #print('page', i,'done')
     
-
-</head>
-
-<body class="edit_app " 
-data-base-url="/"
-data-file-path="crawler1/proxypool.py"
-
->
-
-<noscript>
-    <div id='noscript'>
-      Jupyter Notebook requires JavaScript.<br>
-      Please enable it to proceed.
-  </div>
-</noscript>
-
-<div id="header">
-  <div id="header-container" class="container">
-  <div id="ipython_notebook" class="nav navbar-brand pull-left"><a href="/tree" title='dashboard'><img src='/static/base/images/logo.png?v=7c4597ba713d804995e8f8dad448a397' alt='Jupyter Notebook'/></a></div>
-
-  
-  
-  
-
-    <span id="login_widget">
-      
-    </span>
-
-  
-
-  
-
-  
-
-<span id="save_widget" class="pull-left save_widget">
-    <span class="filename"></span>
-    <span class="last_modified"></span>
-</span>
-
-
-  </div>
-  <div class="header-bar"></div>
-
-  
-
-<div id="menubar-container" class="container">
-  <div id="menubar">
-    <div id="menus" class="navbar navbar-default" role="navigation">
-      <div class="container-fluid">
-          <p  class="navbar-text indicator_area">
-          <span id="current-mode" >current mode</span>
-          </p>
-        <button type="button" class="btn btn-default navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-          <i class="fa fa-bars"></i>
-          <span class="navbar-text">Menu</span>
-        </button>
-        <ul class="nav navbar-nav navbar-right">
-          <li id="notification_area"></li>
-        </ul>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">File</a>
-              <ul id="file-menu" class="dropdown-menu">
-                <li id="new-file"><a href="#">New</a></li>
-                <li id="save-file"><a href="#">Save</a></li>
-                <li id="rename-file"><a href="#">Rename</a></li>
-                <li id="download-file"><a href="#">Download</a></li>
-              </ul>
-            </li>
-            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Edit</a>
-              <ul id="edit-menu" class="dropdown-menu">
-                <li id="menu-find"><a href="#">Find</a></li>
-                <li id="menu-replace"><a href="#">Find &amp; Replace</a></li>
-                <li class="divider"></li>
-                <li class="dropdown-header">Key Map</li>
-                <li id="menu-keymap-default"><a href="#">Default<i class="fa"></i></a></li>
-                <li id="menu-keymap-sublime"><a href="#">Sublime Text<i class="fa"></i></a></li>
-                <li id="menu-keymap-vim"><a href="#">Vim<i class="fa"></i></a></li>
-                <li id="menu-keymap-emacs"><a href="#">emacs<i class="fa"></i></a></li>
-              </ul>
-            </li>
-            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">View</a>
-              <ul id="view-menu" class="dropdown-menu">
-              <li id="toggle_header" title="Show/Hide the logo and notebook title (above menu bar)">
-              <a href="#">Toggle Header</a></li>
-              <li id="menu-line-numbers"><a href="#">Toggle Line Numbers</a></li>
-              </ul>
-            </li>
-            <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Language</a>
-              <ul id="mode-menu" class="dropdown-menu">
-              </ul>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="lower-header-bar"></div>
-
-
-</div>
-
-<div id="site">
-
-
-<div id="texteditor-backdrop">
-<div id="texteditor-container" class="container"></div>
-</div>
-
-
-</div>
-
-
-
-
-
+    def get_proxy3(self):
+        self.new_session()
+        self.response = self.session.get(proxypool.proxy_html[2])
+        selector = etree.HTML(self.response.content)
+        trs = selector.xpath('//*[@id="proxylisttable"]/tbody/tr')
+        for tr in trs:
+            tds = tr.xpath('./td')
+            ip = tds[0].text
+            port = tds[1].text
+            proxypool.proxy_set.add(ip+':'+port)
 
     
+    def get_proxy4(self):
+        self.new_session()
+        self.response = self.session.get(proxypool.proxy_html[3])
+        selector = etree.HTML(self.response.content)
+        trs = selector.xpath('//*[@id="content"]/table[1]/tr')
+        for tr in trs[2:-2]:
+            tds = tr.xpath('./td')
+            if tds:
+                ip = tds[0].text
+                port = tds[1].xpath('./a')[0].text
+                #print(ip, port)
+                proxypool.proxy_set.add(ip+':'+port)
+        
+        
+        return
+
+    def world_proxy(self):
+        self.get_proxy1()
+        for c in proxypool.country_world:
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            
+        self.get_proxy3()
+        self.get_proxy4()
+    
+    def eu_proxy(self):
+        for c in proxypool.country_eu:
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+
+    def na_proxy(self):
+        for c in proxypool.country_na:
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+        self.get_proxy3()
+        
+    def taiwan_proxy(self):
+        self.reset_proxy()
+        self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country ='Taiwan')
+        self.get_proxy4()
+    
+    def asia_proxy(self):
+        for c in proxypool.country_asia:
+            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+        self.get_proxy4()
+        
+    def filter_proxy(self):
+        bad_proxy_set = set()
+        for p in proxypool.proxy_set:
+            connection_score = list()
+            for t in proxypool.proxy_test:
+                self.new_session()
+                try:
+                    self.response = self.session.get(t, timeout=30, proxies={'http':p})
+                    print('checking', p, t, self.response)
+                    connection_score.append(1 if self.response.status_code == 200 else 0)
+
+                #except requests.exceptions.ProxyError as err:
+                #    print(p, t, err.__doc__)
+                #    connection_score.append(0)
+                #    break
+                except Exception as err:
+                    #print(p, t, err.__doc__)
+                    connection_score.append(0)
+                    break
+
+              
+            #print(connection_score)
+            if sum(connection_score) < 4:
+                bad_proxy_set.add(p)
+        else:
+            proxypool.proxy_set = proxypool.proxy_set - bad_proxy_set
+            self.proxy_set_to_proxy_list()
+                
+        
+    def check_this_proxy(self, p):
+        connection_score = list()
+        for t in proxypool.proxy_test:
+            self.new_session()
+            try:
+                self.response = self.session.get(t, timeout=30, proxies={'http':p})
+                print('checking', p, t, self.response)
+                connection_score.append(1 if self.response.status_code == 200 else 0)
+            except Exception as err:
+                connection_score.append(0)
+                break
+
+               
+        if sum(connection_score) < 4:
+            return False
+        else:
+            return True
+        
+    def random_choice_one_proxy(self):
+        p = self.proxy_set.pop()
+        while not self.check_this_proxy(p):
+            p = self.proxy_set.pop()
+
+        return p if p is not None else None
+
+
+# In[ ]:
 
 
 
-    <script src="/static/edit/js/main.min.js?v=cc7536522bdf28a7f0059136b696fd6e" type="text/javascript" charset="utf-8"></script>
-
-
-
-</body>
-
-</html>

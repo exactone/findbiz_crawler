@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[9]:
+# In[1]:
 
 from urllib.parse import urlencode
 import requests
@@ -14,7 +14,7 @@ from fake_useragent import UserAgent
 import sys
 
 
-# In[10]:
+# In[2]:
 
 class CmpyinfoCrawlerError(Exception):
     def __init__(self, prefix, sta=0):
@@ -34,7 +34,7 @@ class CmpyinfoCrawlerError(Exception):
         return s
 
 
-# In[11]:
+# In[3]:
 
 import proxypool
 #p = proxypool()
@@ -43,7 +43,7 @@ import proxypool
 #p.filter_proxy()
 
 
-# In[12]:
+# In[4]:
 
 """
 import proxypool
@@ -83,7 +83,7 @@ class public_proxy_pool:
 """
 
 
-# In[13]:
+# In[5]:
 
 class back_log:
     def __init__(self, flush=False, flush_threshold=1000, first_line='',log_format='', fname =''):
@@ -121,7 +121,7 @@ class back_log:
                 self.queue = list()        
 
 
-# In[20]:
+# In[6]:
 
 from collections import defaultdict
 from datetime import datetime
@@ -174,7 +174,7 @@ class cmpyinfo_crawler:
     
     #proxy = proxypool()
     
-    def __init__(self, qryCond, qryType, pageStart=1, pageEnd=1, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'):
+    def __init__(self, qryCond='', qryType='', pageStart=1, pageEnd=1, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs', logname = 'task.log'):
         self.path_phantomjs = path_phantomjs
         self.session = None
         self.pageStart = pageStart 
@@ -257,7 +257,7 @@ class cmpyinfo_crawler:
                                 flush_threshold=100, 
                                 first_line='{0: >19s}, {1: >19s}, {2: >6s}, {3: >6s}'.format('task execution time', 'this round time', 'page', 'item'), 
                                 log_format= '{0: >19s}, {1: >19s}, {2: >6d}, {3: >6d}', 
-                                fname = '{0:　>5s}@{1: >10s} [{2: >6d}-{3: >6d}]-{4: >17s}.task.log'.format(self.qryCond, str(self.qryType[0]), self.pageStart, self.pageEnd, self.timestamp))
+                                fname = '{}@{: >17s}.task.log'.format(logname, str(self.timestamp)))
         self.parser = {'Cmpy':parser_cmpy_type('Cmpy', self.tasklog), 
                        'CmpyFrgnRp':parser_cmpy_type('CmpyFrgnRp', self.tasklog), 
                        'CmpyFrgn':parser_cmpy_type('CmpyFrgn', self.tasklog), 
@@ -697,15 +697,25 @@ class cmpyinfo_crawler:
         self.tasklog.log(mode='manual', in_log = proxy_str)
         return True
 
+    def set_proxy(self, p):
+        self.proxy = p
+        proxy_str = 'proxy change to ' + str(self.proxy) + ' @ ' + self.exectime('task execution time: ')
+        print(proxy_str)
+        self.tasklog.log(mode='manual', in_log = proxy_str)
+        self.proxy_update = True
+
+        
+    
     def change_proxy(self):
         #ratio = 5 # 5 proxies vs 1 None
         import random
         #self.proxy_list = self.proxypool.proxy_list self.proxy_list[0]
         self.proxy_i += 1
         if self.proxy_i % self.proxy_ratio == 0:
-            self.proxy = None
+            p = None
         else:
             # 如果舊的還沒用完，就拿來用
+            """
             if not self.proxypool.proxy_set:
                 self.renew_poroxypool()
             
@@ -723,14 +733,17 @@ class cmpyinfo_crawler:
                 #    self.proxy = self.proxypool.proxy_set.pop()
                 #else:
                 #    self.proxy = None
+            """   
+            p = {'http':self.proxypool.random_choice_one_proxy()}
         
         #self.proxy = self.proxy_list[1]
         #self.proxy_pool = self.proxy_pool[1:] + self.proxy_pool[0:1]
-        self.proxy = {'http':self.proxy} if self.proxy is not None else None
-        proxy_str = 'proxy change to ' + str(self.proxy) + ' @ ' + self.exectime('task execution time: ')
-        print(proxy_str)
-        self.tasklog.log(mode='manual', in_log = proxy_str)
-        self.proxy_update = True
+        #self.proxy = {'http':self.proxy} if self.proxy is not None else None
+        #proxy_str = 'proxy change to ' + str(self.proxy) + ' @ ' + self.exectime('task execution time: ')
+        #print(proxy_str)
+        #self.tasklog.log(mode='manual', in_log = proxy_str)
+        self.set_proxy(p)
+        #self.proxy_update = True
         
 
 
@@ -1019,7 +1032,7 @@ class cmpyinfo_crawler:
         return self.results
 
 
-# In[15]:
+# In[7]:
 
 import copy
 
@@ -1709,55 +1722,90 @@ class parser_cmpy_type:
             
 
 
-# In[24]:
-
-import pickle
-import proxypool
 
     
 
 
-# In[25]:
+# In[13]:
+
+import pickle
+import proxypool
 
 tasknum = sys.argv[1]
 path_phantomjs = sys.argv[2]
 
+#tasknum = 1
+#path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 
 
 task_dir = './task_ini/'
 task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb'))
 #config['TASK']['1']
-task_proxy = proxypool.proxypool(path_phantomjs = path_phantomjs)
-task_proxy.proxy_set_max = 100
-task_proxy.world_proxy()
+#task_proxy = proxypool.proxypool(path_phantomjs = path_phantomjs)
+#task_proxy.proxy_set_max = 100
+#task_proxy.world_proxy()
+
+crawler = cmpyinfo_crawler(path_phantomjs = path_phantomjs, logname='instance{}_v10_job.pkl'.format(tasknum))
+crawler.proxypool.proxy_set_max = 150
+crawler.proxypool.world_proxy()
+
+#crawler.qryCond = t[1]
+#crawler.qryType = t[2]
+#crawler.pageStart = t[3]
+#crawler.pageEnd = t[4]
 
 for t in task:
     print("======================================")
     print("task ", t[0], ": ", t[1], "@", t[2])
     print("======================================")
     
-    
-    crawler = cmpyinfo_crawler(t[1], qryType = t[2], pageStart=t[3], pageEnd=t[4])
-    
-    crawler.proxy = task_proxy.random_choice_one_proxy()
-    print('proxy changed to', crawler.proxy)
- 
-    if not task_proxy.proxy_set:
-        task_proxy.world_proxy()
-   
     crawler.qryCond = t[1]
     crawler.qryType = t[2]
-    #crawler.set_form_data_url1(mode = 0, currentPage = 1)
+    crawler.pageStart = t[3]
+    crawler.pageEnd = t[4]
+    
+    #crawler = cmpyinfo_crawler(t[1], qryType = t[2], pageStart=t[3], pageEnd=t[4])
+    
+    #crawler.proxy = task_proxy.random_choice_one_proxy()
+    #print('proxy changed to', crawler.proxy)
+ 
+    #if not task_proxy.proxy_set:
+    #    task_proxy.world_proxy()
+   
+    #crawler.qryCond = t[1]
+    #crawler.qryType = t[2]
     
     crawler.set_form_data_url1(mode = 0, currentPage = 1)
     if not crawler.first_connection():
-        continue
+        crawler.change_proxy()
+        if not crawler.first_connection():
+
+            crawler.set_proxy(None)
+            continue
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
     crawler.parse_and_gen_schema(1, crawler.totalPage)
+    crawler.change_proxy()
     #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
-    crawler.session.close()
+    #crawler.session.close()
+
+
+# In[13]:
+
+crawler.proxy = None
+crawler.set_form_data_url1(mode = 0, currentPage = 1)
+crawler.first_connection()
+
+
+# In[14]:
+
+crawler.print_html()
+
+
+# In[12]:
+
+crawler.proxypool.asia_proxy()
 
 
 # In[ ]:
