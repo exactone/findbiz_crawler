@@ -97,6 +97,8 @@ class proxypool:
         trs = selector.xpath('//div[@class="proxy-list"]/table[@id="tblproxy"]/tbody/tr')  
         for tr in trs[2:]:
             tds = tr.xpath('./td')
+            if len(tds) < 2:
+                continue
             ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
             port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
             proxypool.proxy_set.add(ip+':'+port)
