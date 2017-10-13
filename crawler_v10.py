@@ -1743,7 +1743,7 @@ path_phantomjs = sys.argv[2]
 task_dir = './task_ini/'
 task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb'))
 taskstart = int(sys.argv[3]) if len(sys.argv) >= 4 else int(task[0][0])
-proxytick = int(sys.argv[4]) if len(sys.argv) >= 5 else 1
+proxy_tick = int(sys.argv[4]) if len(sys.argv) >= 5 else 1
 #config['TASK']['1']
 #task_proxy = proxypool.proxypool(path_phantomjs = path_phantomjs)
 #task_proxy.proxy_set_max = 100
@@ -1793,7 +1793,7 @@ for t in task:
     crawler.resolve_page()
     crawler.parse_and_gen_schema(1, crawler.totalPage)
     crawler.proxy_monitor()
-    if proxy_tick > 3600:
+    if crawler.proxy_tick > 3600:
         import random
         time.sleep(random.randint(50,70))
     #crawler.change_proxy()
