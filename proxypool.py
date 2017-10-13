@@ -68,7 +68,7 @@ class proxypool:
             proxypool.proxy_set.add(ip+':'+port)
 
 
-    def get_proxy2(self, PhantomJs_executable_path='/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs', country ='Taiwan'):
+    def get_proxy2(self, country ='Taiwan'):
         def clean_text(text):
             import re
             if text is None:
@@ -79,7 +79,7 @@ class proxypool:
             text = re.sub(r'[\t\n\r]', r'', text)
             return text
         # step 1. use PhantomJs to get .js rendered content
-        browser = webdriver.PhantomJS(executable_path = PhantomJs_executable_path)
+        browser = webdriver.PhantomJS(executable_path = self.path_phantomjs)
         browser.get(proxypool.proxy_html[1]+country)
 
         # step 2. click "Show Full List" button to generate full proxies list
@@ -154,28 +154,28 @@ class proxypool:
     def world_proxy(self):
         self.get_proxy1()
         for c in proxypool.country_world:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
             
         self.get_proxy3()
         self.get_proxy4()
     
     def eu_proxy(self):
         for c in proxypool.country_eu:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
 
     def na_proxy(self):
         for c in proxypool.country_na:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
         self.get_proxy3()
         
     def taiwan_proxy(self):
         self.reset_proxy()
-        self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country ='Taiwan')
+        self.get_proxy2(country ='Taiwan')
         self.get_proxy4()
     
     def asia_proxy(self):
         for c in proxypool.country_asia:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
         self.get_proxy4()
         
     def filter_proxy(self):
