@@ -1734,7 +1734,10 @@ for t in task:
     
     crawler.proxy = task_proxy.random_choice_one_proxy()
     print('proxy changed to', crawler.proxy)
-    
+ 
+    if not task_proxy.set:
+        task_proxy.world_proxy()
+   
     crawler.qryCond = t[1]
     crawler.qryType = t[2]
     #crawler.set_form_data_url1(mode = 0, currentPage = 1)
@@ -1747,3 +1750,4 @@ for t in task:
     crawler.parse_and_gen_schema(1, crawler.totalPage)
     #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
     crawler.session.close()
+
