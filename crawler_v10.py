@@ -1718,7 +1718,7 @@ tasknum = sys.argv[1]
 path_phantomjs = sys.argv[2]
 
 task_dir = './task_ini/'
-task = pickle.load(open(task_dir+'instance{}_v10_single_job.pkl'.format(tasknum), 'rb'))
+task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb'))
 #config['TASK']['1']
 task_proxy = proxypool.proxypool(path_phantomjs = path_phantomjs)
 task_proxy.proxy_set_max = 100
