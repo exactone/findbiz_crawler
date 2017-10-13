@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# In[2]:
+# In[8]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -68,7 +68,8 @@ class proxypool:
             proxypool.proxy_set.add(ip+':'+port)
 
 
-    def get_proxy2(self, PhantomJs_executable_path='/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs', country ='Taiwan'):
+    def get_proxy2(self, country ='Taiwan'):
+        #PhantomJs_executable_path='/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
         def clean_text(text):
             import re
             if text is None:
@@ -79,7 +80,7 @@ class proxypool:
             text = re.sub(r'[\t\n\r]', r'', text)
             return text
         # step 1. use PhantomJs to get .js rendered content
-        browser = webdriver.PhantomJS(executable_path = PhantomJs_executable_path)
+        browser = webdriver.PhantomJS(executable_path = self.path_phantomjs)
         browser.get(proxypool.proxy_html[1]+country)
 
         # step 2. click "Show Full List" button to generate full proxies list
@@ -97,6 +98,8 @@ class proxypool:
         trs = selector.xpath('//div[@class="proxy-list"]/table[@id="tblproxy"]/tbody/tr')  
         for tr in trs[2:]:
             tds = tr.xpath('./td')
+            if len(tds) < 2:
+                continue
             ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
             port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
             proxypool.proxy_set.add(ip+':'+port)
@@ -115,6 +118,8 @@ class proxypool:
             trs = selector.xpath('//div[@class="proxy-list"]/table[@id="tblproxy"]/tbody/tr')
             for tr in trs[2:]:
                 tds = tr.xpath('./td')
+                if len(tds) < 2:
+                    continue
                 ip = "" if not tds[1].xpath('./text()') else tds[1].xpath('./text()')[0]
                 port = "" if not tds[2].xpath('./text()') else tds[2].xpath('./text()')[0]
                 proxypool.proxy_set.add(ip+':'+port)
@@ -154,23 +159,23 @@ class proxypool:
     def world_proxy(self):
         self.get_proxy1()
         for c in proxypool.country_world:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
             
         self.get_proxy3()
         self.get_proxy4()
     
     def eu_proxy(self):
         for c in proxypool.country_eu:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
 
     def na_proxy(self):
         for c in proxypool.country_na:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
         self.get_proxy3()
         
     def taiwan_proxy(self):
         self.reset_proxy()
-        self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country ='Taiwan')
+        self.get_proxy2(country ='Taiwan')
         self.get_proxy4()
     
     def asia_proxy(self):
@@ -184,43 +189,29 @@ class proxypool:
             connection_score = list()
             for t in proxypool.proxy_test:
                 self.new_session()
-                try:
-                    self.response = self.session.get(t, timeout=30, proxies={'http':p})
-                    print('checking', p, t, self.response)
-                    connection_score.append(1 if self.response.status_code == 200 else 0)
-
-                #except requests.exceptions.ProxyError as err:
-                #    print(p, t, err.__doc__)
-                #    connection_score.append(0)
-                #    break
-                except Exception as err:
-                    #print(p, t, err.__doc__)
-                    connection_score.append(0)
-                    break
-
-              
-            #print(connection_score)
-            if sum(connection_score) < 4:
-                bad_proxy_set.add(p)
+                
+                if not check_this_proxy(p):
+                    bad_proxy_set.add(p)
         else:
             proxypool.proxy_set = proxypool.proxy_set - bad_proxy_set
             self.proxy_set_to_proxy_list()
                 
         
     def check_this_proxy(self, p):
-        connection_score = list()
+        connection_score = 0
         for t in proxypool.proxy_test:
             self.new_session()
             try:
                 self.response = self.session.get(t, timeout=30, proxies={'http':p})
                 print('checking', p, t, self.response)
-                connection_score.append(1 if self.response.status_code == 200 else 0)
+                if self.response.status_code != 200:
+                    return False
+                else:
+                    connection_score += 1
             except Exception as err:
-                connection_score.append(0)
-                break
-
+                return False
                
-        if sum(connection_score) < 4:
+        if connection_score < 4:
             return False
         else:
             return True
@@ -228,12 +219,10 @@ class proxypool:
     def random_choice_one_proxy(self):
         p = self.proxy_set.pop()
         while not self.check_this_proxy(p):
+            if len(self.proxy_set) == 0:
+                p = None
+                break
             p = self.proxy_set.pop()
 
         return p if p is not None else None
-
-
-# In[ ]:
-
-
 
