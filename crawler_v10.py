@@ -1791,24 +1791,3 @@ for t in task:
     #crawler.session.close()
 
 
-# In[13]:
-
-crawler.proxy = None
-crawler.set_form_data_url1(mode = 0, currentPage = 1)
-crawler.first_connection()
-
-
-# In[14]:
-
-crawler.print_html()
-
-
-# In[12]:
-
-crawler.proxypool.asia_proxy()
-
-
-# In[ ]:
-
-
-
