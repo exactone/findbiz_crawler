@@ -1742,6 +1742,7 @@ path_phantomjs = sys.argv[2]
 
 task_dir = './task_ini/'
 task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb'))
+taskstart = sys.argv[3] if len(sys.argv) >= 4 else int(task[0][0])
 #config['TASK']['1']
 #task_proxy = proxypool.proxypool(path_phantomjs = path_phantomjs)
 #task_proxy.proxy_set_max = 100
@@ -1766,6 +1767,8 @@ for t in task:
     crawler.pageStart = t[3]
     crawler.pageEnd = t[4]
     
+    if int(t[0]) < taskstart:
+        continue    
     #crawler = cmpyinfo_crawler(t[1], qryType = t[2], pageStart=t[3], pageEnd=t[4])
     
     #crawler.proxy = task_proxy.random_choice_one_proxy()
