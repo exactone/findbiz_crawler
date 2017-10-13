@@ -1740,7 +1740,8 @@ for t in task:
     #crawler.set_form_data_url1(mode = 0, currentPage = 1)
     
     crawler.set_form_data_url1(mode = 0, currentPage = 1)
-    crawler.first_connection()
+    if not crawler.first_connection():
+        continue
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
     crawler.parse_and_gen_schema(1, crawler.totalPage)
