@@ -1711,11 +1711,19 @@ class parser_cmpy_type:
 
 # In[24]:
 
+import pickle
+import proxypool
 
-# In[ ]:
+    
+
+
+# In[25]:
 
 tasknum = sys.argv[1]
 path_phantomjs = sys.argv[2]
+
+
+
 
 task_dir = './task_ini/'
 task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb'))
@@ -1750,4 +1758,9 @@ for t in task:
     crawler.parse_and_gen_schema(1, crawler.totalPage)
     #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
     crawler.session.close()
+
+
+# In[ ]:
+
+
 
