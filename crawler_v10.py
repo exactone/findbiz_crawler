@@ -1732,11 +1732,11 @@ class parser_cmpy_type:
 import pickle
 import proxypool
 
-#tasknum = sys.argv[1]
-#path_phantomjs = sys.argv[2]
+tasknum = sys.argv[1]
+path_phantomjs = sys.argv[2]
 
-tasknum = 1
-path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
+#tasknum = 1
+#path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 
 
