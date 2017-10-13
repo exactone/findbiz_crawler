@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[9]:
+# In[1]:
 
 from urllib.parse import urlencode
 import requests
@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# In[35]:
+# In[3]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -224,4 +224,16 @@ class proxypool:
             return False
         else:
             return True
+        
+    def random_choice_one_proxy(self):
+        p = self.proxy_set.pop()
+        while not self.check_this_proxy(p):
+            p = self.proxy_set.pop()
+
+        return p if p is not None else None
+
+
+# In[ ]:
+
+
 
