@@ -646,6 +646,8 @@ class cmpyinfo_crawler:
         #p.filter_proxy()
         
         #import proxypool
+        if self.proxy_tick < 0:
+            return
         
         self.end = time.time()
         if self.end - self.pooling > self.proxy_tick:
@@ -1792,7 +1794,7 @@ for t in task:
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
     crawler.parse_and_gen_schema(1, crawler.totalPage)
-    if crawler.proxy_tick == 0:
+    if crawler.proxy_tick < 0:
         import random
         time.sleep(random.randint(50,70))
     else:
