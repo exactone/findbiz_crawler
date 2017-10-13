@@ -1735,7 +1735,7 @@ for t in task:
     crawler.proxy = task_proxy.random_choice_one_proxy()
     print('proxy changed to', crawler.proxy)
  
-    if not task_proxy.set:
+    if not task_proxy.proxy_set:
         task_proxy.world_proxy()
    
     crawler.qryCond = t[1]
