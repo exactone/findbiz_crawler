@@ -63,7 +63,7 @@ echo '=============='
 echo 'install fake_useragent, selenium, '
 echo '=============='
 source ~/.bashrc
-yes | conda create --name crawler anaconda
+yes y| conda create --name crawler anaconda
 source activate crawler
 pip install fake_useragent
 pip install -U selenium
