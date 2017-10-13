@@ -879,7 +879,8 @@ class cmpyinfo_crawler:
     def output_files(self, itemStart, itemEnd):
         d = datetime.now()
         timestamp = "{0:0>4d}{1:0>2d}{2:0>2d}_{3:0>2d}{4:0>2d}{5:0>2d}".format(d.year,d.month,d.day,d.hour,d.minute,d.second)
-        fname = '{0:　>5s}@{1: >10s} [{2: >6d}-{3: >6d}][{4: >6d}-{5: >6d}]-{6: >17s}'.format(self.qryCond, str(self.qryType[0]), self.pageStart, self.pageEnd, itemStart, itemEnd,timestamp)        
+        fname = '{0:　>5s}@{1: >10s}-{2: >17s}'.format(self.qryCond, str(self.qryType[0]),timestamp)        
+        #fname = '{0:　>5s}@{1: >10s} [{2: >6d}-{3: >6d}][{4: >6d}-{5: >6d}]-{6: >17s}'.format(self.qryCond, str(self.qryType[0]), self.pageStart, self.pageEnd, itemStart, itemEnd,timestamp)        
         for key in crawler.results:
             if crawler.results[key]:
                 #j = json.dumps(crawler.results[key], ensure_ascii=False)
@@ -890,18 +891,18 @@ class cmpyinfo_crawler:
                     json.dump(j, tjout, ensure_ascii=False)
                     tjout.write(',\n')
                 
-                with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
-                    pickle.dump(j, jpklout)
+                #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
+                #    pickle.dump(j, jpklout)
                     
                 df = pd.DataFrame(crawler.results[key])
                 with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
                     df.to_csv(dfcsvout, index=False)
-                with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
-                    pickle.dump(j, dfpklout)
+                #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
+                #    pickle.dump(j, dfpklout)
                     
-                with open(fname+'_'+key+'content.html', 'w') as contentout:
-                    contentout.write(self.response.content.decode('utf8'))
-                    #pickle.dump(self.response.content.decode('utf8'), contentout)
+                #with open(fname+'_'+key+'content.html', 'w') as contentout:
+                #    contentout.write(self.response.content.decode('utf8'))
+                #    #pickle.dump(self.response.content.decode('utf8'), contentout)
                     
     def set_pageStart(self, pageStart):
         self.pageStart = pageStart
@@ -1722,8 +1723,8 @@ class parser_cmpy_type:
             
 
 
+# In[ ]:
 
-    
 
 
 # In[13]:
@@ -1731,11 +1732,11 @@ class parser_cmpy_type:
 import pickle
 import proxypool
 
-tasknum = sys.argv[1]
-path_phantomjs = sys.argv[2]
+#tasknum = sys.argv[1]
+#path_phantomjs = sys.argv[2]
 
-#tasknum = 1
-#path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
+tasknum = 1
+path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 
 
