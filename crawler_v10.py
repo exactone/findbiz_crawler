@@ -885,8 +885,8 @@ class cmpyinfo_crawler:
             if crawler.results[key]:
                 #j = json.dumps(crawler.results[key], ensure_ascii=False)
                 j = crawler.results[key]
-                with open(fname+'_'+key+'_json.json', 'w') as jout:
-                    json.dump(j, jout, ensure_ascii=False)
+                #with open(fname+'_'+key+'_json.json', 'w') as jout:
+                #    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
                     json.dump(j, tjout, ensure_ascii=False)
                     tjout.write(',\n')
@@ -894,9 +894,9 @@ class cmpyinfo_crawler:
                 #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
                 #    pickle.dump(j, jpklout)
                     
-                df = pd.DataFrame(crawler.results[key])
-                with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
-                    df.to_csv(dfcsvout, index=False)
+                #df = pd.DataFrame(crawler.results[key])
+                #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
+                #    df.to_csv(dfcsvout, index=False)
                 #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
                 #    pickle.dump(j, dfpklout)
                     
