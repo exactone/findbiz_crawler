@@ -1792,10 +1792,11 @@ for t in task:
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
     crawler.parse_and_gen_schema(1, crawler.totalPage)
-    crawler.proxy_monitor()
-    if crawler.proxy_tick > 3600:
+    if crawler.proxy_tick == 0:
         import random
         time.sleep(random.randint(50,70))
+    else:
+        crawler.proxy_monitor()
     #crawler.change_proxy()
     #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
     #crawler.session.close()
