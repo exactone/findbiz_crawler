@@ -479,7 +479,7 @@ class cmpyinfo_crawler:
         except requests.exceptions.ProxyError as err:
             self.tasklog.log(mode='manual', in_log = "Exception requests.ProxyError @ first_connection(), remove proxy")
             self.change_proxy()
-            self.response = self.session.post(url1, headers=request_header1, data=self.form_data_url1, proxies=self.proxy)
+            #self.response = self.session.post(url1, headers=request_header1, data=self.form_data_url1, proxies=self.proxy)
             return False            
         except Exception as err:
             self.exception_happened = True
@@ -525,7 +525,7 @@ class cmpyinfo_crawler:
             print(ccerr)
             self.tasklog.log(mode='manual', in_log = str(ccerr))
             self.tasklog.log_flush()
-
+            self.change_proxy()
             return False
         
         # 同一統編可有多個結果
@@ -547,7 +547,7 @@ class cmpyinfo_crawler:
             print(ccerr)
             self.tasklog.log(mode='manual', in_log = str(ccerr))
             self.tasklog.log_flush()
-
+            self.change_proxy()
             return False                
                 
         
@@ -595,6 +595,7 @@ class cmpyinfo_crawler:
             print(err.__doc__)
             self.tasklog.log(mode='manual', in_log = err.__doc__)
             self.tasklog.log_flush()
+            self.change_proxy()
             return False
         
         try:
@@ -606,6 +607,7 @@ class cmpyinfo_crawler:
             print(ccerr)
             self.tasklog.log(mode='manual', in_log = str(ccerr))
             self.tasklog.log_flush()
+            self.change_proxy()
             return False
         
         return True
@@ -909,6 +911,9 @@ class cmpyinfo_crawler:
             # self.first_connection()
             retry = 0
             while not self.first_connection():
+                if retry > 10:
+                    continue
+                
                 retry += 1
                 self.tasklog.log(mode='manual', in_log = 'first_connection() @ page{} failed, retry {} times'.format(self.pageNow, retry))
                 time.sleep(10)
@@ -921,6 +926,8 @@ class cmpyinfo_crawler:
                 retry = 0
                 # self.second_connection()
                 while not self.second_connection():
+                    if retry > 10:
+                        continue
                     retry += 1
                     self.tasklog.log(mode='manual', in_log = 'second_connection() @ page{}  item {} failed, retry {} times'.format(self.pageNow, self.pageItem, retry))
                     time.sleep(10)
@@ -1699,7 +1706,46 @@ class parser_cmpy_type:
             
 
 
+# In[ ]:
 
+import pickle
+import proxypool
+#import configparser
+#config = configparser.ConfigParser()
+#config.read('./task_ini/instance2_job.ini')
+task_dir = './task_ini/'
+task = pickle.load(open(task_dir+'instance1_v10_job.pkl', 'rb'))
+#config['TASK']['1']
+task_proxy = proxypool.proxypool()
+task_proxy.proxy_set_max = 10
+task_proxy.world_proxy()
+
+for t in task:
+    print("======================================")
+    print("task ", t[0], ": ", t[1], "@", t[2])
+    print("======================================")
+    
+    
+    crawler = cmpyinfo_crawler(t[1], qryType = t[2], pageStart=t[3], pageEnd=t[4])
+    
+    crawler.proxy = task_proxy.random_choice_one_proxy()
+    print('proxy changed to', crawler.proxy)
+    if not task_proxy.proxy_set:
+        task_proxy.world_proxy()
+    
+    crawler.qryCond = t[1]
+    crawler.qryType = t[2]
+    #crawler.set_form_data_url1(mode = 0, currentPage = 1)
+    
+    crawler.set_form_data_url1(mode = 0, currentPage = 1)
+    if not crawler.first_connection():
+        continue
+    #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
+    crawler.resolve_page()
+    crawler.parse_and_gen_schema(1, crawler.totalPage)
+    #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
+    crawler.session.close()
+    #del crawler
     
 
 
@@ -1738,9 +1784,6 @@ crawler.proxy_tick = proxy_tick
 #crawler.pageEnd = t[4]
 
 for t in task:
-    if int(t[0]) < taskstart:
-        continue
-        
     print("======================================")
     print("task ", t[0], ": ", t[1], "@", t[2])
     print("======================================")
@@ -1749,7 +1792,8 @@ for t in task:
     crawler.qryType = t[2]
     crawler.pageStart = t[3]
     crawler.pageEnd = t[4]
-
+    if int(t[0]) < taskstart:
+        continue
     
     
     
