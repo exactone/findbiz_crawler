@@ -1721,10 +1721,9 @@ task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb')
 crawler = cmpyinfo_crawler(path_phantomjs = path_phantomjs, logname='instance{}_v10_job.log'.format(tasknum))
 crawler.proxypool.proxy_set_max = 150
 crawler.proxypool.world_proxy()
-crawler.proxy_tick = proxy_tick
+#crawler.proxy_tick = proxy_tick
 crawler.proxypool.none_freq = 4
 
-print('fuck 2')
 #crawler.qryCond = t[1]
 #crawler.qryType = t[2]
 #crawler.pageStart = t[3]
