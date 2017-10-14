@@ -861,8 +861,8 @@ class cmpyinfo_crawler:
             if crawler.results[key]:
                 #j = json.dumps(crawler.results[key], ensure_ascii=False)
                 j = crawler.results[key]
-                with open(fname+'_'+key+'_json.json', 'w') as jout:
-                    json.dump(j, jout, ensure_ascii=False)
+                #with open(fname+'_'+key+'_json.json', 'w') as jout:
+                #    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
                     json.dump(j, tjout, ensure_ascii=False)
                     tjout.write(',\n')
@@ -870,9 +870,9 @@ class cmpyinfo_crawler:
                 #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
                 #    pickle.dump(j, jpklout)
                     
-                df = pd.DataFrame(crawler.results[key])
-                with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
-                    df.to_csv(dfcsvout, index=False)
+                #df = pd.DataFrame(crawler.results[key])
+                #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
+                #    df.to_csv(dfcsvout, index=False)
                 #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
                 #    pickle.dump(j, dfpklout)
                     
@@ -1713,8 +1713,8 @@ path_phantomjs = sys.argv[2]
 
 
 
-tasknum = 1
-path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
+#tasknum = 1
+#path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 
 
@@ -1738,6 +1738,9 @@ crawler.proxy_tick = proxy_tick
 #crawler.pageEnd = t[4]
 
 for t in task:
+    if int(t[0]) < taskstart:
+        continue
+        
     print("======================================")
     print("task ", t[0], ": ", t[1], "@", t[2])
     print("======================================")
@@ -1746,8 +1749,7 @@ for t in task:
     crawler.qryType = t[2]
     crawler.pageStart = t[3]
     crawler.pageEnd = t[4]
-    if int(t[0]) < taskstart:
-        continue
+
     
     
     
