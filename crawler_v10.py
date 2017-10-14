@@ -1707,7 +1707,7 @@ path_phantomjs = sys.argv[2]
 
 task_dir = './task_ini/'
 task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb'))
-#taskstart = int(sys.argv[3]) if len(sys.argv) >= 4 else int(task[0][0])
+taskstart = int(sys.argv[3]) if len(sys.argv) >= 4 else int(task[0][0])
 #proxy_tick = int(sys.argv[4]) if len(sys.argv) >= 5 else 1
 
 #taskstart = 0
