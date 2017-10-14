@@ -912,6 +912,8 @@ class cmpyinfo_crawler:
             retry = 0
             while not self.first_connection():
                 if retry > 10:
+                    with open('skip_query.log', 'a') as skpf:
+                        skpf.write(self.qryCond+str(self.qryType)+'\n')
                     continue
                 
                 retry += 1
