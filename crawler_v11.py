@@ -184,7 +184,7 @@ class cmpyinfo_crawler:
         #self.tick = 300
         
         #self.proxy_pool = [{'http':'proxy.hinet.net:80'}, None]
-        self.proxypool = proxypool.proxypool(path_phantomjs=path_phantomjs)
+        self.proxypool = proxypool.proxypool(none_freq = 2, path_phantomjs=path_phantomjs)
         self.proxy_ratio = 5 # 5 proxies vs 1 None
         self.proxy_i = 0
         self.proxy = None
@@ -201,6 +201,8 @@ class cmpyinfo_crawler:
         self.totalCount = 1
         self.flush_threshold = 1000
         self.total_json_name = "all_json_out"
+        
+        
         
         
         # self.trlog = back_log(flush=False, flush_threshold=1, first_line='',logformat='', fname ='')
@@ -611,7 +613,6 @@ class cmpyinfo_crawler:
         return True
             
 
-
     def proxy_monitor(self):
         if self.proxy_tick < 0:
             return
@@ -620,10 +621,10 @@ class cmpyinfo_crawler:
         if self.end - self.pooling > self.proxy_tick:
             self.change_proxy()
             self.pooling = time.time()
+            
     
     def renew_poroxypool(self):
         self.proxypool.reset_proxy()
-        # 更新proxypool，先拿亞洲，拿不到就拿全世界
         try:
             self.proxypool.asia_proxy()
             if len(self.proxypool.proxy_set) == 0:
@@ -645,7 +646,7 @@ class cmpyinfo_crawler:
                 print(ccerr)
                 self.tasklog.log(mode='manual', in_log = str(ccerr))
                 self.tasklog.log_flush()
-                return False
+                return
             
                 
         #self.proxypool.filter_proxy()
@@ -667,6 +668,7 @@ class cmpyinfo_crawler:
         #ratio = 5 # 5 proxies vs 1 None
         #import random
         #self.proxy_list = self.proxypool.proxy_list self.proxy_list[0]
+        
         if not self.proxypool.proxy_set:
             self.renew_poroxypool()
         
@@ -676,7 +678,7 @@ class cmpyinfo_crawler:
         #else:  
         #    p = {'http':self.proxypool.random_choice_one_proxy()}
         p = self.proxypool.random_choice_one_proxy_with_none_freq()
-        
+        print('p :', p)
         self.set_proxy(p)
         #self.proxy_update = True
         
@@ -840,20 +842,20 @@ class cmpyinfo_crawler:
             if crawler.results[key]:
                 #j = json.dumps(crawler.results[key], ensure_ascii=False)
                 j = crawler.results[key]
-                #with open(fname+'_'+key+'_json.json', 'w') as jout:
-                #    json.dump(j, jout, ensure_ascii=False)
+                with open(fname+'_'+key+'_json.json', 'w') as jout:
+                    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
                     json.dump(j, tjout, ensure_ascii=False)
                     tjout.write(',\n')
                 
-                #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
-                #    pickle.dump(j, jpklout)
+                with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
+                    pickle.dump(j, jpklout)
                     
-                #df = pd.DataFrame(crawler.results[key])
-                #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
-                #    df.to_csv(dfcsvout, index=False)
-                #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
-                #    pickle.dump(j, dfpklout)
+                df = pd.DataFrame(crawler.results[key])
+                with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
+                    df.to_csv(dfcsvout, index=False)
+                with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
+                    pickle.dump(j, dfpklout)
                     
                 #with open(fname+'_'+key+'content.html', 'w') as contentout:
                 #    contentout.write(self.response.content.decode('utf8'))
@@ -882,10 +884,10 @@ class cmpyinfo_crawler:
             else:
                 self.set_form_data_url1(mode = 0)
               
-            # 在first_connection刷完一頁(20筆)，檢查一次是否超過self.proxy_tick，若是就關掉舊的session，並轉到proxy
+            # 在first_connection刷完一頁(20筆)，檢查一次是否超過30分鐘，若是就關掉舊的session，並轉到proxy
             self.proxy_monitor()
             
-            # self.first_connection() 出問題時重試10次
+            # self.first_connection()
             retry = 0
             while not self.first_connection():
                 if retry > 10:
@@ -1684,81 +1686,64 @@ class parser_cmpy_type:
             
 
 
-
-    
-
-
 # In[7]:
 
-import pickle
-import proxypool
-# usage:
-# cralwer_v10.py 3        /usr/local/bin/phantomjs 60005            3
-#                job號碼   phontomjs執行檔位置        查詢流水號，可接關  proxy_tick
+#path_phantomjs = sys.argv[1]
+path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
-tasknum = sys.argv[1]
-path_phantomjs = sys.argv[2]
+task = [
+        ('合夥', ['lmtdType'], 1, 1),   # 12筆、分1頁
+        ('合作社', ['factType'], 1, 5), # 94筆、分5頁
+        ('服務站', ['busmType'], 1, 5),  # 95筆、分5頁
+        ('賣場', ['busmType'], 1, 7),    # 122筆、分7頁
+        ('組', ['busmType'], 1, 8),     # 154筆、分8頁
+        ('公司', ['busmType'], 1, 8),   # 148筆、8頁 # 這個案例經典 # done    
+        ('超商', ['busmType'], 1, 32),    # 629筆、分32頁
+        ('處', ['busmType'], 1, 107),     # 2131筆、分107頁
+        ('便當', ['busmType'], 1, 114),   # 2271筆、分114頁
+        ('自助餐', ['busmType'], 1, 157), # 3138筆、分157頁
+        ('所', ['busmType'], 1, 425),     # 8491筆、分425頁
+        ('部', ['busmType'], 1, 574),     # 11476筆、分574頁
+        ('記',['busmType'], 1, 848),      # 16957筆、分848頁
+        ('院', ['busmType'], 1, 799),     # 15976筆、分799頁
+        ('工廠', ['factType'], 1, 1535),  # 30687筆、分1535頁
+        ('小吃', ['busmType'], 1, 2090),   # 41786筆、分2090頁
+        ('廠', ['busmType'], 1, 2252),     # 45022筆、分2252頁
+        ('號',['busmType'], 1, 3506),      # 70115筆、分3506頁
+        ('公司', ['brCmpyType'], 1, 4094), #81879筆、分4094頁
+        ('廠', ['factType'], 1, 7502),    # 150026筆、分7502頁
+        ('公司', ['factType'], 1, 13860),   # 277189筆、分13860頁
+        ('店',['busmType'], 1, 16364),      # 327277筆、分16364頁
+        ('社', ['busmType'], 1, 19201),     # 384017筆、分19201頁
+        ('公司', ['cmpyType'], 1, 89180),   # 1783583筆、分89180頁
+        ('行',['busmType'], 1, 41233),      # 824642筆、分41233頁
+        ] 
 
 
-#tasknum = 1
-#path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
+for k, t in enumerate(task):
+    
 
-
-task_dir = './task_ini/'
-task = pickle.load(open(task_dir+'instance{}_v10_job.pkl'.format(tasknum), 'rb'))
-#taskstart = int(sys.argv[3]) if len(sys.argv) >= 4 else int(task[0][0])
-#proxy_tick = int(sys.argv[4]) if len(sys.argv) >= 5 else 1
-
-#taskstart = 0
-#proxy_tick = 20
-
-#config['TASK']['1']
-#task_proxy = proxypool.proxypool(path_phantomjs = path_phantomjs)
-#task_proxy.proxy_set_max = 100
-#task_proxy.world_proxy()
-
-crawler = cmpyinfo_crawler(path_phantomjs = path_phantomjs, logname='instance{}_v10_job.log'.format(tasknum))
-crawler.proxypool.proxy_set_max = 150
-crawler.proxypool.world_proxy()
-crawler.proxy_tick = proxy_tick
-crawler.proxypool.none_freq = 4
-
-print('fuck 2')
-#crawler.qryCond = t[1]
-#crawler.qryType = t[2]
-#crawler.pageStart = t[3]
-#crawler.pageEnd = t[4]
-
-for t in task:
     print("======================================")
-    print("task ", t[0], ": ", t[1], "@", t[2])
+    print("task ", k, ": ", t[0], "@", t[1], "From page", t[2], "to", t[3])
     print("======================================")
+    crawler = cmpyinfo_crawler(t[0], qryType = t[1], pageStart=0, pageEnd=0, path_phantomjs = path_phantomjs, logname='total_job.log')
+    crawler.proxy_tick = 20
     
-    crawler.qryCond = t[1]
-    crawler.qryType = t[2]
-    crawler.pageStart = t[3]
-    crawler.pageEnd = t[4]
-    if int(t[0]) < taskstart:
-        continue
-    
-    
-    
+    crawler.qryCond = t[0]
+    crawler.qryType = t[1]
     crawler.set_form_data_url1(mode = 0, currentPage = 1)
-    if not crawler.first_connection():
-        crawler.change_proxy()
-        if not crawler.first_connection():
 
-            crawler.set_proxy(None)
-            continue
+    
+    #crawler.set_form_data_url1(mode = 1, currentPage = crawler.pageStart)
+    crawler.first_connection()
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
-    crawler.parse_and_gen_schema(1, crawler.totalPage)
-    #if crawler.proxy_tick < 0:
-    #    import random
-    #    time.sleep(random.randint(50,70))
-    #else:
-    #    crawler.proxy_monitor()
+    #crawler.parse_and_gen_schema(1, crawler.totalPage)
+    crawler.parse_and_gen_schema(crawler.pageStart, 500 if crawler.totalPage > 500 else crawler.totalPage)
+    crawler.session.close()
+    #del crawler
+    
 
 
 # In[ ]:

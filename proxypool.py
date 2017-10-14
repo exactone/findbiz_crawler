@@ -23,7 +23,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-# In[8]:
+# In[13]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -40,10 +40,12 @@ class proxypool:
     proxy_set_max = 15
     #proxy_re = re.compile('[0-9]+(?:\.[0-9]+){3}:\d{2,4}')
     
-    def __init__(self, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'):
+    def __init__(self, none_freq = 2, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'):
         self.session = None
         self.response = None
         self.path_phantomjs = path_phantomjs
+        self.none_freq = none_freq
+        self.none_freq_cnt = 0
         
     def new_session(self):
         if self.session is not None:
@@ -223,6 +225,21 @@ class proxypool:
                 p = None
                 break
             p = self.proxy_set.pop()
+        return {'http':p} if p is not None else None
+    
+    def random_choice_one_proxy_with_none_freq(self):
+        self.none_freq_cnt += 1
+        if self.none_freq_cnt % self.none_freq == 0:
+            self.none_freq_cnt = 0
+            return None
+        else:
+            return self.random_choice_one_proxy()
+           
 
-        return p if p is not None else None
+        
+
+
+# In[ ]:
+
+
 
