@@ -487,6 +487,7 @@ class cmpyinfo_crawler:
             print(err.__doc__)
             self.tasklog.log(mode='manual', in_log = err.__doc__)
             self.tasklog.log_flush()
+            self.change_proxy()
             return False
         
         
@@ -499,10 +500,19 @@ class cmpyinfo_crawler:
             print(ccerr)
             self.tasklog.log(mode='manual', in_log = str(ccerr))
             self.tasklog.log_flush()
+            self.change_proxy()
             return False
         
-        selector = etree.HTML(self.response.content)
-        
+        try:
+            selector = etree.HTML(self.response.content)
+        except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception from etree @ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
         
         # reCaptcha 測試
         try:
@@ -638,14 +648,7 @@ class cmpyinfo_crawler:
         
         return True
             
-    def proxy_monitor(self):
-        
-        #p = proxypool()
-        #p.na_proxy()
-        #print(p.proxy_set)
-        #p.filter_proxy()
-        
-        #import proxypool
+    def proxy_monitor(self):        
         if self.proxy_tick < 0:
             return
         
@@ -653,13 +656,7 @@ class cmpyinfo_crawler:
         if self.end - self.pooling > self.proxy_tick:
             self.pooling = time.time()
             self.change_proxy()
-            #self.proxy=self.proxy_pool[0]
-            #self.proxy_pool = self.proxy_pool[1:] + self.proxy_pool[0:1]
-            
-            #proxy_str = 'proxy change to ' + str(self.proxy) + ' @ ' + self.exectime('task execution time: ')
-            #print(proxy_str)
-            #self.tasklog.log(mode='manual', in_log = proxy_str)
-            #self.proxy_update = True
+
 
     def proxy_monitor(self):
         self.end = time.time()
@@ -712,38 +709,15 @@ class cmpyinfo_crawler:
         #ratio = 5 # 5 proxies vs 1 None
         import random
         #self.proxy_list = self.proxypool.proxy_list self.proxy_list[0]
+        if not self.proxypool.proxy_set:
+            self.renew_poroxypool()
+        
         self.proxy_i += 1
         if self.proxy_i % self.proxy_ratio == 0:
             p = None
-        else:
-            # 如果舊的還沒用完，就拿來用
-            """
-            if not self.proxypool.proxy_set:
-                self.renew_poroxypool()
-            
-            while self.proxypool.proxy_set:
-                self.proxy = self.proxypool.proxy_set.pop()
-                if self.proxypool.check_this_proxy(self.proxy):
-                    break
-                
-                # 檢查失敗就繼續拿下一個
-            else:
-                # 順利結束while，表示self.proxypool.proxy_set都是爛的，所以改回None
-                self.proxy = None
-                #self.renew_poroxypool()
-                #if self.renew_poroxypool():            
-                #    self.proxy = self.proxypool.proxy_set.pop()
-                #else:
-                #    self.proxy = None
-            """   
+        else:  
             p = {'http':self.proxypool.random_choice_one_proxy()}
-        
-        #self.proxy = self.proxy_list[1]
-        #self.proxy_pool = self.proxy_pool[1:] + self.proxy_pool[0:1]
-        #self.proxy = {'http':self.proxy} if self.proxy is not None else None
-        #proxy_str = 'proxy change to ' + str(self.proxy) + ' @ ' + self.exectime('task execution time: ')
-        #print(proxy_str)
-        #self.tasklog.log(mode='manual', in_log = proxy_str)
+
         self.set_proxy(p)
         #self.proxy_update = True
         
@@ -887,8 +861,8 @@ class cmpyinfo_crawler:
             if crawler.results[key]:
                 #j = json.dumps(crawler.results[key], ensure_ascii=False)
                 j = crawler.results[key]
-                #with open(fname+'_'+key+'_json.json', 'w') as jout:
-                #    json.dump(j, jout, ensure_ascii=False)
+                with open(fname+'_'+key+'_json.json', 'w') as jout:
+                    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
                     json.dump(j, tjout, ensure_ascii=False)
                     tjout.write(',\n')
@@ -896,9 +870,9 @@ class cmpyinfo_crawler:
                 #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
                 #    pickle.dump(j, jpklout)
                     
-                #df = pd.DataFrame(crawler.results[key])
-                #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
-                #    df.to_csv(dfcsvout, index=False)
+                df = pd.DataFrame(crawler.results[key])
+                with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
+                    df.to_csv(dfcsvout, index=False)
                 #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
                 #    pickle.dump(j, dfpklout)
                     
@@ -1725,8 +1699,8 @@ class parser_cmpy_type:
             
 
 
-# In[ ]:
 
+    
 
 
 # In[13]:
@@ -1737,8 +1711,10 @@ import proxypool
 tasknum = sys.argv[1]
 path_phantomjs = sys.argv[2]
 
-#tasknum = 1
-#path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
+
+
+tasknum = 1
+path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 
 
@@ -1770,19 +1746,10 @@ for t in task:
     crawler.qryType = t[2]
     crawler.pageStart = t[3]
     crawler.pageEnd = t[4]
-    
     if int(t[0]) < taskstart:
-        continue    
-    #crawler = cmpyinfo_crawler(t[1], qryType = t[2], pageStart=t[3], pageEnd=t[4])
+        continue
     
-    #crawler.proxy = task_proxy.random_choice_one_proxy()
-    #print('proxy changed to', crawler.proxy)
- 
-    #if not task_proxy.proxy_set:
-    #    task_proxy.world_proxy()
-   
-    #crawler.qryCond = t[1]
-    #crawler.qryType = t[2]
+    
     
     crawler.set_form_data_url1(mode = 0, currentPage = 1)
     if not crawler.first_connection():
@@ -1799,8 +1766,9 @@ for t in task:
         time.sleep(random.randint(50,70))
     else:
         crawler.proxy_monitor()
-    #crawler.change_proxy()
-    #crawler.parse_and_gen_schema(crawler.pageStart, self.totalPage)
-    #crawler.session.close()
+
+
+# In[ ]:
+
 
 
