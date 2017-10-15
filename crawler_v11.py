@@ -1688,7 +1688,7 @@ class parser_cmpy_type:
 
 # In[7]:
 
-path_phantomjs = sys.argv[2]
+path_phantomjs = sys.argv[1]
 #path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 task = [
