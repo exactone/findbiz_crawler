@@ -1692,11 +1692,11 @@ path_phantomjs = sys.argv[1]
 #path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 task = [
-        ('合夥', ['lmtdType'], 1, 1),   # 12筆、分1頁
-        ('合作社', ['factType'], 1, 5), # 94筆、分5頁
-        ('服務站', ['busmType'], 1, 5),  # 95筆、分5頁
-        ('賣場', ['busmType'], 1, 7),    # 122筆、分7頁
-        ('組', ['busmType'], 1, 8),     # 154筆、分8頁
+#        ('合夥', ['lmtdType'], 1, 1),   # 12筆、分1頁
+#        ('合作社', ['factType'], 1, 5), # 94筆、分5頁
+#        ('服務站', ['busmType'], 1, 5),  # 95筆、分5頁
+#        ('賣場', ['busmType'], 1, 7),    # 122筆、分7頁
+#        ('組', ['busmType'], 1, 8),     # 154筆、分8頁
         ('公司', ['busmType'], 1, 8),   # 148筆、8頁 # 這個案例經典 # done    
         ('超商', ['busmType'], 1, 32),    # 629筆、分32頁
         ('處', ['busmType'], 1, 107),     # 2131筆、分107頁
