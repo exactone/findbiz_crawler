@@ -182,7 +182,7 @@ class proxypool:
     
     def asia_proxy(self):
         for c in proxypool.country_asia:
-            self.get_proxy2(PhantomJs_executable_path=self.path_phantomjs, country = c)
+            self.get_proxy2(country = c)
         self.get_proxy4()
         
     def filter_proxy(self):
