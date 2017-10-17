@@ -59,8 +59,13 @@ class proxypool:
         proxypool.proxy_list = [{'http':p} for p in proxypool.proxy_set]
     
     def get_proxy1(self):
-        self.new_session()
-        self.response = self.session.get(proxypool.proxy_html[0])
+        try:
+            self.new_session()
+            self.response = self.session.get(proxypool.proxy_html[0])
+        except Exception as err:
+            print(err)
+            return
+            
         selector = etree.HTML(self.response.content)
         trs = selector.xpath('//*[@id="proxylisttable"]/tbody/tr')
         for tr in trs:
@@ -131,8 +136,13 @@ class proxypool:
             #print('page', i,'done')
     
     def get_proxy3(self):
-        self.new_session()
-        self.response = self.session.get(proxypool.proxy_html[2])
+        try:
+            self.new_session()
+            self.response = self.session.get(proxypool.proxy_html[2])
+        except Exception as err:
+            print(err)
+            return
+        
         selector = etree.HTML(self.response.content)
         trs = selector.xpath('//*[@id="proxylisttable"]/tbody/tr')
         for tr in trs:
@@ -143,8 +153,13 @@ class proxypool:
 
     
     def get_proxy4(self):
-        self.new_session()
-        self.response = self.session.get(proxypool.proxy_html[3])
+        try:
+            self.new_session()
+            self.response = self.session.get(proxypool.proxy_html[3])
+        except Exception as err:
+            print(err)
+            return
+        
         selector = etree.HTML(self.response.content)
         trs = selector.xpath('//*[@id="content"]/table[1]/tr')
         for tr in trs[2:-2]:
