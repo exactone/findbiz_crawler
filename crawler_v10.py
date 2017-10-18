@@ -703,16 +703,22 @@ class cmpyinfo_crawler:
 
 
         
+        m = random.choice(magnitude)
+        b = random.choice(basetime)        
         s = random.choice(sleeptime)
         if scale == 'small':
             s *= 1
+            b *= 0.25
+            m *= 0.75
         if scale == 'midium':
             s *= 6
+            b *= 0.75
+            m *= 0.75
         if scale == 'large':
             s *= 12
+            b *= 1
+            m *= 1 
             
-        m = random.choice(magnitude)
-        b = random.choice(basetime)
         time.sleep(b+m*s)
             
     def print_html(self):
@@ -976,7 +982,7 @@ class cmpyinfo_crawler:
                     item_last = item_count
                     #return
                 #self.results.append( (self.querytype, parser.data_schema) )
-                self.random_sleep('mixed_large')
+                self.random_sleep('mixed_small')
         else:
             #self.output_files()
             self.output_files(item_last, item_count)
