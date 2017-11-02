@@ -464,6 +464,17 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
+        except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception @ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+
+
+
         
         try:
             selector = etree.HTML(self.response.content)
@@ -489,7 +500,16 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
-        
+         except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception @ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+
+       
         # 同一統編可有多個結果
         hrefs = selector.xpath('//*[@id="vParagraph"]/div[@class="panel panel-default"]/div[@class="panel-heading companyName"]/a')
         del self.oncontextmenu
@@ -511,7 +531,15 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False                
-                
+         except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception from oncontextmenu@ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+               
         
     def second_connection(self):
         url2 = cmpyinfo_crawler.url2_dict[self.querytype]

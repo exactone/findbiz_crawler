@@ -463,7 +463,16 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
-        
+         except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception @ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+
+       
         try:
             selector = etree.HTML(self.response.content)
         except Exception as err:
@@ -474,7 +483,7 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
-        
+       
         # reCaptcha 測試
         try:
             recaptcha = selector.xpath('//div[@class="g-recaptcha"]')
@@ -490,7 +499,7 @@ class cmpyinfo_crawler:
             return False
         except Exception as err:
             self.exception_happened = True
-            self.tasklog.log(mode='manual', in_log = "Exception @ second_connection()")
+            self.tasklog.log(mode='manual', in_log = "Exception from recaptcha@ first_connection()")
             print(err.__doc__)
             self.tasklog.log(mode='manual', in_log = err.__doc__)
             self.tasklog.log_flush()
@@ -519,7 +528,16 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False                
-                
+         except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception from oncontextmenu@ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+
+               
         
     def second_connection(self):
         url2 = cmpyinfo_crawler.url2_dict[self.querytype]
