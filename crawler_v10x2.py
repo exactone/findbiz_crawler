@@ -463,7 +463,7 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
-         except Exception as err:
+        except Exception as err:
             self.exception_happened = True
             self.tasklog.log(mode='manual', in_log = "Exception @ first_connection()")
             print(err.__doc__)
@@ -528,7 +528,7 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False                
-         except Exception as err:
+        except Exception as err:
             self.exception_happened = True
             self.tasklog.log(mode='manual', in_log = "Exception from oncontextmenu@ first_connection()")
             print(err.__doc__)
