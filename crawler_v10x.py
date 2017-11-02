@@ -874,10 +874,10 @@ class cmpyinfo_crawler:
         timestamp = "{0:0>4d}{1:0>2d}{2:0>2d}_{3:0>2d}{4:0>2d}{5:0>2d}".format(d.year,d.month,d.day,d.hour,d.minute,d.second)
         fname = '{0:　>5s}@{1: >10s}-{2: >17s}'.format(self.qryCond, str(self.qryType[0]),timestamp)        
         #fname = '{0:　>5s}@{1: >10s} [{2: >6d}-{3: >6d}][{4: >6d}-{5: >6d}]-{6: >17s}'.format(self.qryCond, str(self.qryType[0]), self.pageStart, self.pageEnd, itemStart, itemEnd,timestamp)        
-        for key in this.results:
-            if this.results[key]:
-                #j = json.dumps(this.results[key], ensure_ascii=False)
-                j = this.results[key]
+        for key in self.results:
+            if self.results[key]:
+                #j = json.dumps(self.results[key], ensure_ascii=False)
+                j = self.results[key]
                 #with open(fname+'_'+key+'_json.json', 'w') as jout:
                 #    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
@@ -887,7 +887,7 @@ class cmpyinfo_crawler:
                 #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
                 #    pickle.dump(j, jpklout)
                     
-                #df = pd.DataFrame(this.results[key])
+                #df = pd.DataFrame(self.results[key])
                 #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
                 #    df.to_csv(dfcsvout, index=False)
                 #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
