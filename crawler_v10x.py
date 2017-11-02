@@ -134,7 +134,7 @@ class cmpyinfo_crawler:
     
     #proxy = proxypool()
     
-    def __init__(self, qryCond='', qryType='', pageStart=1, pageEnd=1, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs', logname = 'task.log'):
+    def __init__(self, qryCond='', qryType='', pageStart=1, pageEnd=1, path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs', logname = 'task.log', sleep_scale='small'):
         self.path_phantomjs = path_phantomjs
         self.session = None
         self.pageStart = pageStart 
@@ -238,6 +238,7 @@ class cmpyinfo_crawler:
         #self.flush_threshold = 20;
         
         self.exception_happened = False
+        self.sleep_scale = sleep_scale 
         
         
         
@@ -462,7 +463,16 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
-        
+         except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception @ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+
+       
         try:
             selector = etree.HTML(self.response.content)
         except Exception as err:
@@ -473,7 +483,7 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
-        
+       
         # reCaptcha 測試
         try:
             recaptcha = selector.xpath('//div[@class="g-recaptcha"]')
@@ -487,6 +497,15 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
+        except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception from recaptcha@ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+
         
         # 同一統編可有多個結果
         hrefs = selector.xpath('//*[@id="vParagraph"]/div[@class="panel panel-default"]/div[@class="panel-heading companyName"]/a')
@@ -509,7 +528,16 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False                
-                
+         except Exception as err:
+            self.exception_happened = True
+            self.tasklog.log(mode='manual', in_log = "Exception from oncontextmenu@ first_connection()")
+            print(err.__doc__)
+            self.tasklog.log(mode='manual', in_log = err.__doc__)
+            self.tasklog.log_flush()
+            self.change_proxy()
+            return False
+
+               
         
     def second_connection(self):
         url2 = cmpyinfo_crawler.url2_dict[self.querytype]
@@ -684,6 +712,7 @@ class cmpyinfo_crawler:
 
     def random_sleep(self, scale = 'small'):
         import random
+
         #            15%   20%     20%     10% 15%   20%   
         sleeptime = [1,1,1,2,2,2,2,3,3,3,3,4,4,5,5,5,6,6,6,6]
         #            15%               35%                  15%               15%            5%    15%   
@@ -691,6 +720,9 @@ class cmpyinfo_crawler:
         #            10%20%   30%      40%
         basetime  = [5, 7.5, 7.5, 10, 12.5, 12.5, 3, 3, 3, 3]
         
+        if scale == 'none':
+            return
+
         if scale == 'mixed':
             scale = random.choice(['small']+['midium']+['large'])
         if scale == 'mixed_small':
@@ -803,7 +835,7 @@ class cmpyinfo_crawler:
                 #del parser
                 
                 
-                self.random_sleep()
+                self.random_sleep(scale = self.sleep_scale)
             else:
                 item_count += self.pageItem
                 #self.this_round_time_end()
@@ -842,10 +874,10 @@ class cmpyinfo_crawler:
         timestamp = "{0:0>4d}{1:0>2d}{2:0>2d}_{3:0>2d}{4:0>2d}{5:0>2d}".format(d.year,d.month,d.day,d.hour,d.minute,d.second)
         fname = '{0:　>5s}@{1: >10s}-{2: >17s}'.format(self.qryCond, str(self.qryType[0]),timestamp)        
         #fname = '{0:　>5s}@{1: >10s} [{2: >6d}-{3: >6d}][{4: >6d}-{5: >6d}]-{6: >17s}'.format(self.qryCond, str(self.qryType[0]), self.pageStart, self.pageEnd, itemStart, itemEnd,timestamp)        
-        for key in crawler.results:
-            if crawler.results[key]:
-                #j = json.dumps(crawler.results[key], ensure_ascii=False)
-                j = crawler.results[key]
+        for key in self.results:
+            if self.results[key]:
+                #j = json.dumps(self.results[key], ensure_ascii=False)
+                j = self.results[key]
                 #with open(fname+'_'+key+'_json.json', 'w') as jout:
                 #    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
@@ -855,7 +887,7 @@ class cmpyinfo_crawler:
                 #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
                 #    pickle.dump(j, jpklout)
                     
-                #df = pd.DataFrame(crawler.results[key])
+                #df = pd.DataFrame(self.results[key])
                 #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
                 #    df.to_csv(dfcsvout, index=False)
                 #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
@@ -957,7 +989,7 @@ class cmpyinfo_crawler:
                 #print(self.results)
                 #print("----------- self.results")
                 self.tasklog.log(mode='format', args=(self.exectime(), self.this_round_exectime(), self.pageNow, self.pageItem), postfix = 'done') 
-                self.random_sleep()
+                self.random_sleep(scale = self.sleep_scale)
                 item_count += 1
                 item_count_flush += 1
             else:
@@ -982,7 +1014,7 @@ class cmpyinfo_crawler:
                     item_last = item_count
                     #return
                 #self.results.append( (self.querytype, parser.data_schema) )
-                self.random_sleep('mixed_small')
+                self.random_sleep(scale = self.sleep_scale)
         else:
             #self.output_files()
             self.output_files(item_last, item_count)
@@ -1724,7 +1756,7 @@ taskstart = int(sys.argv[3]) if len(sys.argv) >= 4 else int(task[0][0])
 #task_proxy.proxy_set_max = 100
 #task_proxy.world_proxy()
 
-crawler = cmpyinfo_crawler(path_phantomjs = path_phantomjs, logname='instance{}_v10.x_job.log'.format(tasknum))
+crawler = cmpyinfo_crawler(path_phantomjs = path_phantomjs, logname='instance{}_v10.x_job.log'.format(tasknum), sleep_scale='none')
 crawler.proxypool.proxy_set_max = 150
 crawler.proxypool.world_proxy()
 #crawler.proxy_tick = proxy_tick
