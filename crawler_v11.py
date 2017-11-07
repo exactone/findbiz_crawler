@@ -875,20 +875,20 @@ class cmpyinfo_crawler:
             if self.results[key]:
                 #j = json.dumps(self.results[key], ensure_ascii=False)
                 j = self.results[key]
-                with open(fname+'_'+key+'_json.json', 'w') as jout:
-                    json.dump(j, jout, ensure_ascii=False)
+                #with open(fname+'_'+key+'_json.json', 'w') as jout:
+                #    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
                     json.dump(j, tjout, ensure_ascii=False)
                     tjout.write(',\n')
                 
-                with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
-                    pickle.dump(j, jpklout)
+                #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
+                #    pickle.dump(j, jpklout)
                     
-                df = pd.DataFrame(self.results[key])
-                with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
-                    df.to_csv(dfcsvout, index=False)
-                with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
-                    pickle.dump(j, dfpklout)
+                #df = pd.DataFrame(self.results[key])
+                #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
+                #    df.to_csv(dfcsvout, index=False)
+                #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
+                #    pickle.dump(j, dfpklout)
                     
                 #with open(fname+'_'+key+'content.html', 'w') as contentout:
                 #    contentout.write(self.response.content.decode('utf8'))
