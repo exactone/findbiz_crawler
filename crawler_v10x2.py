@@ -199,7 +199,7 @@ class cmpyinfo_crawler:
         
         self.totalPage = 1
         self.totalCount = 1
-        self.flush_threshold = 1000
+        self.flush_threshold = 20
         self.total_json_name = "all_json_out"
         
         
