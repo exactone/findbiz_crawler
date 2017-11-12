@@ -202,6 +202,8 @@ class cmpyinfo_crawler:
         self.flush_threshold = 1000
         self.total_json_name = "all_json_out"
         
+        self.sleep_scale = sleep_scale
+ 
         
         
         
@@ -500,7 +502,7 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False
-         except Exception as err:
+        except Exception as err:
             self.exception_happened = True
             self.tasklog.log(mode='manual', in_log = "Exception @ first_connection()")
             print(err.__doc__)
@@ -531,7 +533,7 @@ class cmpyinfo_crawler:
             self.tasklog.log_flush()
             self.change_proxy()
             return False                
-         except Exception as err:
+        except Exception as err:
             self.exception_happened = True
             self.tasklog.log(mode='manual', in_log = "Exception from oncontextmenu@ first_connection()")
             print(err.__doc__)
@@ -738,7 +740,7 @@ class cmpyinfo_crawler:
         
         s = random.choice(sleeptime)
         if scale == 'small':
-            s *= 1
+            s *= 0.25
         if scale == 'midium':
             s *= 6
         if scale == 'large':
@@ -873,20 +875,20 @@ class cmpyinfo_crawler:
             if self.results[key]:
                 #j = json.dumps(self.results[key], ensure_ascii=False)
                 j = self.results[key]
-                with open(fname+'_'+key+'_json.json', 'w') as jout:
-                    json.dump(j, jout, ensure_ascii=False)
+                #with open(fname+'_'+key+'_json.json', 'w') as jout:
+                #    json.dump(j, jout, ensure_ascii=False)
                 with open(self.total_json_name+'_json.json', 'a') as tjout:
                     json.dump(j, tjout, ensure_ascii=False)
                     tjout.write(',\n')
                 
-                with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
-                    pickle.dump(j, jpklout)
+                #with open(fname+'_'+key+'_json.pkl', 'wb') as jpklout:  
+                #    pickle.dump(j, jpklout)
                     
-                df = pd.DataFrame(self.results[key])
-                with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
-                    df.to_csv(dfcsvout, index=False)
-                with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
-                    pickle.dump(j, dfpklout)
+                #df = pd.DataFrame(self.results[key])
+                #with open(fname+'_'+key+'df.csv', 'w') as dfcsvout:
+                #    df.to_csv(dfcsvout, index=False)
+                #with open(fname+'_'+key+'df.pkl', 'wb') as dfpklout:
+                #    pickle.dump(j, dfpklout)
                     
                 #with open(fname+'_'+key+'content.html', 'w') as contentout:
                 #    contentout.write(self.response.content.decode('utf8'))
@@ -1723,28 +1725,28 @@ path_phantomjs = sys.argv[1]
 #path_phantomjs = '/usr/local/Cellar/phantomjs/2.1.1/bin/phantomjs'
 
 task = [
-#        ('合夥', ['lmtdType'], 1, 1),   # 12筆、分1頁
-#        ('合作社', ['factType'], 1, 5), # 94筆、分5頁
-#        ('服務站', ['busmType'], 1, 5),  # 95筆、分5頁
-#        ('賣場', ['busmType'], 1, 7),    # 122筆、分7頁
-#        ('組', ['busmType'], 1, 8),     # 154筆、分8頁
-        ('公司', ['busmType'], 1, 8),   # 148筆、8頁 # 這個案例經典 # done    
-        ('超商', ['busmType'], 1, 32),    # 629筆、分32頁
-        ('處', ['busmType'], 1, 107),     # 2131筆、分107頁
-        ('便當', ['busmType'], 1, 114),   # 2271筆、分114頁
-        ('自助餐', ['busmType'], 1, 157), # 3138筆、分157頁
-        ('所', ['busmType'], 1, 425),     # 8491筆、分425頁
-        ('部', ['busmType'], 1, 574),     # 11476筆、分574頁
-        ('記',['busmType'], 1, 848),      # 16957筆、分848頁
-        ('院', ['busmType'], 1, 799),     # 15976筆、分799頁
-        ('工廠', ['factType'], 1, 1535),  # 30687筆、分1535頁
-        ('小吃', ['busmType'], 1, 2090),   # 41786筆、分2090頁
-        ('廠', ['busmType'], 1, 2252),     # 45022筆、分2252頁
-        ('號',['busmType'], 1, 3506),      # 70115筆、分3506頁
-        ('公司', ['brCmpyType'], 1, 4094), #81879筆、分4094頁
-        ('廠', ['factType'], 1, 7502),    # 150026筆、分7502頁
-        ('公司', ['factType'], 1, 13860),   # 277189筆、分13860頁
-        ('店',['busmType'], 1, 16364),      # 327277筆、分16364頁
+        ('合夥', ['lmtdType'], 1, 1),   #0 12筆、分1頁
+        ('合作社', ['factType'], 1, 5), #1 94筆、分5頁
+        ('服務站', ['busmType'], 1, 5),  #2 95筆、分5頁
+        ('賣場', ['busmType'], 1, 7),    #3 122筆、分7頁
+        ('組', ['busmType'], 1, 8),     #4 154筆、分8頁
+        ('公司', ['busmType'], 1, 8),   #5 148筆、8頁 # 這個案例經典 # done    
+        ('超商', ['busmType'], 1, 32),    #6 629筆、分32頁
+        ('處', ['busmType'], 1, 107),     #7 2131筆、分107頁
+        ('便當', ['busmType'], 1, 114),   #8 2271筆、分114頁
+        ('自助餐', ['busmType'], 1, 157), #9 3138筆、分157頁
+        ('所', ['busmType'], 1, 425),     #10 8491筆、分425頁
+        ('部', ['busmType'], 1, 574),     #11 11476筆、分574頁
+        ('記',['busmType'], 1, 848),      #12 16957筆、分848頁
+        ('院', ['busmType'], 1, 799),     #13 15976筆、分799頁
+        ('工廠', ['factType'], 1, 1535),  #14 30687筆、分1535頁
+        ('小吃', ['busmType'], 1, 2090),   #15 41786筆、分2090頁
+        ('廠', ['busmType'], 1, 2252),     #16 45022筆、分2252頁
+        ('號',['busmType'], 1, 3506),      #17 70115筆、分3506頁
+        ('公司', ['brCmpyType'], 1, 4094), #18 81879筆、分4094頁
+        ('廠', ['factType'], 1, 7502),    #19 150026筆、分7502頁
+        ('公司', ['factType'], 1, 13860),   #20 277189筆、分13860頁
+        ('店',['busmType'], 1, 16364),      #21 327277筆、分16364頁
         ('社', ['busmType'], 1, 19201),     # 384017筆、分19201頁
         ('公司', ['cmpyType'], 1, 89180),   # 1783583筆、分89180頁
         ('行',['busmType'], 1, 41233),      # 824642筆、分41233頁
@@ -1771,6 +1773,8 @@ for k, t in enumerate(task):
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
     #crawler.parse_and_gen_schema(1, crawler.totalPage)
+    crawler.pageStart = t[2]
+    crawler.pageEnd = t[3]
     crawler.parse_and_gen_schema(crawler.pageStart, 500 if crawler.totalPage > 500 else crawler.totalPage)
     crawler.session.close()
     #del crawler

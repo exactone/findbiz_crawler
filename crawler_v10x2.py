@@ -1768,9 +1768,7 @@ crawler.proxypool.none_freq = 4
 #crawler.pageEnd = t[4]
 
 for t in task:
-    print("======================================")
-    print("task ", t[0], ": ", t[1], "@", t[2])
-    print("======================================")
+
     
     crawler.qryCond = t[1]
     crawler.qryType = t[2]
@@ -1778,7 +1776,10 @@ for t in task:
     crawler.pageEnd = t[4]
     if int(t[0]) < taskstart:
         continue
-    
+        
+    print("======================================")
+    print("task ", t[0], ": ", t[1], "@", t[2])
+    print("======================================")
     
     
     crawler.set_form_data_url1(mode = 0, currentPage = 1)
