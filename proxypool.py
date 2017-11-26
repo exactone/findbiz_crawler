@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[43]:
+# In[1]:
 
 from urllib.parse import urlencode
 import requests
@@ -22,8 +22,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+import multiprocessing as mp
 
-# In[44]:
+
+# In[32]:
 
 class proxypool:
     proxy_html = ['http://free-proxy-list.net', 
@@ -262,39 +264,66 @@ class proxypool:
         else:
             proxypool.proxy_set = proxypool.proxy_set - bad_proxy_set
             self.proxy_set_to_proxy_list()
-                
-        
+                    
     def check_this_proxy(self, p):
-        connection_score = 0
-        for t in proxypool.proxy_test:
-            self.new_session()
+        print('checking', p)
+        def check_proxy_on_url(p, url):
+            sess = requests.Session()
             try:
-                self.response = self.session.get(t, timeout=30, proxies={'http':p})
-                print('checking', p, t, self.response)
-                if self.response.status_code != 200:
-                    return False
-                else:
-                    connection_score += 1
+                self.response = sess.get(t, timeout=30, proxies=p)
+                print('checking', p,'@', t,'get response.status_code', self.response)
+                sess.close()
+                Q.put((p, self.response.status_code == 200))
             except Exception as err:
-                return False
-               
-        if connection_score < 4:
-            return False
+                print('checking', p,'@', t, 'Exception happened:', err)
+                if sess:
+                    sess.close()
+                Q.put((p, False))
+
+        cpus = mp.cpu_count()
+        print('cpus:', cpus)
+        rounds = len(proxypool.proxy_test) // cpus
+        Q = mp.JoinableQueue()
+        for r in range(rounds):
+            plist = list()
+            for t in proxypool.proxy_test[cpus*r : cpus*(r+1)]:
+                pi = mp.Process(target=check_proxy_on_url, args=(p, t))
+                plist.append( pi )
+                pi.start()
+        
+            Q.join()
+            for pi in plist:
+                pi.join()
+            
+            for pi in plist:
+                pi.terminate()
+                del pi
+            else:
+                del plist
+                
+            while not Q.empty():
+                check = Q.get()
+                print('Q.get():', check)
+                if not check[1]:
+                    return False
         else:
             return True
         
     def random_choice_one_proxy(self):
         import random
         self.proxy_set_to_proxy_list()
-        p = random.choice(self.proxy_set_to_proxy_list)
-        self.proxy_set.pop(p['http'])
+        p = random.choice(self.proxy_list)
+        del self.proxy_list[self.proxy_list.index(p)]
+        self.proxy_set.remove( list(p.values())[0] )
+        print('while')
         while not self.check_this_proxy(p):
-            if len(self.proxy_set) == 0:
+            print('in while')
+            if len(proxypool.proxy_set) == 0:
                 p = {'http':None}
                 break
                 
-            p = random.choice(self.proxy_set_to_proxy_list)
-            self.proxy_set.pop(p['http'])
+            p = random.choice(self.proxy_list)
+            self.proxy_set.remove( list(p.values())[0] )
         return p
     
     def random_choice_one_proxy_with_none_freq(self):
@@ -304,24 +333,4 @@ class proxypool:
             return None
         else:
             return self.random_choice_one_proxy()     
-
-
-# In[45]:
-
-p1 = proxypool()
-
-
-# In[46]:
-
-p1.group_proxy()
-
-
-# In[50]:
-
-p1.proxy_set
-
-
-# In[ ]:
-
-
 
