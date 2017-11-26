@@ -658,18 +658,18 @@ class cmpyinfo_crawler:
                 raise CmpyinfoCrawlerError('ResolveProxyError', self.sta)
         except CmpyinfoCrawlerError as cerr:
             self.exception_happened = True
-            self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.group _proxy(), retry proxypool.world_proxy()")
+            self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.group _proxy(), retry proxypool.group_proxy()")
             print(ccerr)
             self.tasklog.log(mode='manual', in_log = str(ccerr))
             self.tasklog.log_flush()
             
             try:
-                self.proxypool.world_proxy()
+                self.proxypool.group_proxy()
                 if len(self.proxypool.proxy_set) == 0:
                     raise CmpyinfoCrawlerError('ResolveProxyError', self.sta)                
             except:
                 self.exception_happened = True
-                self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.world_proxy(), you can only use local ip")
+                self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.group_proxy(), you can only use local ip")
                 print(ccerr)
                 self.tasklog.log(mode='manual', in_log = str(ccerr))
                 self.tasklog.log_flush()
