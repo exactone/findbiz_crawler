@@ -1758,7 +1758,7 @@ taskstart = int(sys.argv[3]) if len(sys.argv) >= 4 else int(task[0][0])
 
 crawler = cmpyinfo_crawler(path_phantomjs = path_phantomjs, logname='instance{}_v10.x2_job.log'.format(tasknum), sleep_scale='none')
 crawler.proxypool.proxy_set_max = 150
-crawler.proxypool.world_proxy()
+crawler.proxypool.group_proxy()
 #crawler.proxy_tick = proxy_tick
 crawler.proxypool.none_freq = 4
 
