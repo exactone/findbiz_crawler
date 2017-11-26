@@ -216,7 +216,7 @@ class proxypool:
             self.africa_i += 1
             return proxypool.africa[self.africa_i % len(proxypool.africa)]
         elif area == 'world':
-            return proxypool.world
+            return proxypool.country_world
         elif area == 'group':
             self.group_i += 1
             return proxypool.group[self.group_i % len(proxypool.group)]
