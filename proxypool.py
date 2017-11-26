@@ -318,7 +318,7 @@ class proxypool:
                     self.response = sess.get(t, timeout=30, proxies=p)
                     print('checking', p,'@', t,'get response.status_code', self.response)
                     sess.close()
-                        valid_proxy = self.response.status_code == 200
+                    valid_proxy = self.response.status_code == 200
                 except Exception as err:
                     print('checking', p,'@', t, 'Exception happened:', err)
                     if sess:
