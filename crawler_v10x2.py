@@ -653,12 +653,12 @@ class cmpyinfo_crawler:
         self.proxypool.reset_proxy()
         # 更新proxypool，先拿亞洲，拿不到就拿全世界
         try:
-            self.proxypool.asia_proxy()
+            self.proxypool.group_proxy()
             if len(self.proxypool.proxy_set) == 0:
                 raise CmpyinfoCrawlerError('ResolveProxyError', self.sta)
         except CmpyinfoCrawlerError as cerr:
             self.exception_happened = True
-            self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.asia_proxy(), retry proxypool.world_proxy()")
+            self.tasklog.log(mode='manual', in_log = "Can not resolve proxy from proxypool.group _proxy(), retry proxypool.world_proxy()")
             print(ccerr)
             self.tasklog.log(mode='manual', in_log = str(ccerr))
             self.tasklog.log_flush()
