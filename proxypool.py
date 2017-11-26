@@ -282,32 +282,53 @@ class proxypool:
 
         cpus = mp.cpu_count()
         print('cpus:', cpus)
-        rounds = len(proxypool.proxy_test) // cpus
-        Q = mp.JoinableQueue()
-        for r in range(rounds):
-            plist = list()
-            for t in proxypool.proxy_test[cpus*r : cpus*(r+1)]:
-                pi = mp.Process(target=check_proxy_on_url, args=(p, t))
-                plist.append( pi )
-                pi.start()
         
-            Q.join()
-            for pi in plist:
-                pi.join()
+        if cpus > 1:
+            rounds = len(proxypool.proxy_test) // cpus
+            Q = mp.JoinableQueue()
+            for r in range(rounds):
+                plist = list()
+                for t in proxypool.proxy_test[cpus*r : cpus*(r+1)]:
+                    pi = mp.Process(target=check_proxy_on_url, args=(p, t, cpus))
+                    plist.append( pi )
+                    pi.start()
+        
+                Q.join()
+                for pi in plist:
+                    pi.join()
             
-            for pi in plist:
-                pi.terminate()
-                del pi
-            else:
-                del plist
+                for pi in plist:
+                    pi.terminate()
+                    del pi
+                else:
+                    del plist
                 
-            while not Q.empty():
-                check = Q.get()
-                print('Q.get():', check)
-                if not check[1]:
-                    return False
+                while not Q.empty():
+                    check = Q.get()
+                    print('Q.get():', check)
+                    if not check[1]:
+                        return False
+            else:
+                return True
         else:
-            return True
+            for t in proxypool.proxy_test:
+                sess = requests.Session()
+                valid_proxy = True
+                try:
+                    self.response = sess.get(t, timeout=30, proxies=p)
+                    print('checking', p,'@', t,'get response.status_code', self.response)
+                    sess.close()
+                        valid_proxy = self.response.status_code == 200
+                except Exception as err:
+                    print('checking', p,'@', t, 'Exception happened:', err)
+                    if sess:
+                        sess.close()
+                    valid_proxy = False
+                
+                if not valid_proxy:
+                    return False
+            else:
+                return True
         
     def random_choice_one_proxy(self):
         import random
