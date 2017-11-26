@@ -356,9 +356,7 @@ class proxypool:
             return self.random_choice_one_proxy()     
 
 
-# In[33]:
 
-p1 = proxypool()
 
 
 
