@@ -933,7 +933,7 @@ class cmpyinfo_crawler:
                 
                 retry += 1
                 self.tasklog.log(mode='manual', in_log = 'first_connection() @ page{} failed, retry {} times'.format(self.pageNow, retry))
-                time.sleep(10)
+                time.sleep(2)
                 
             for self.pageItem, o in enumerate(self.oncontextmenu, 1):
                 #self.pageItem = i
