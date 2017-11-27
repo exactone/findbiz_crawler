@@ -344,6 +344,7 @@ class proxypool:
                 break
                 
             p = random.choice(self.proxy_list)
+            del self.proxy_list[self.proxy_list.index(p)]
             self.proxy_set.remove( list(p.values())[0] )
         return p
     
