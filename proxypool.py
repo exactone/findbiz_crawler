@@ -271,17 +271,17 @@ class proxypool:
             sess = requests.Session()
             try:
                 self.response = sess.get(t, timeout=30, proxies=p)
-                print('checking', p,'@', t,'get response.status_code', self.response)
+                #print('checking', p,'@', t,'get response.status_code', self.response)
                 sess.close()
                 Q.put((p, self.response.status_code == 200))
             except Exception as err:
-                print('checking', p,'@', t, 'Exception happened:', err)
+                #print('checking', p,'@', t, 'Exception happened:', err)
                 if sess:
                     sess.close()
                 Q.put((p, False))
 
         cpus = mp.cpu_count()
-        print('cpus:', cpus)
+        #print('cpus:', cpus)
         
         if cpus > 1:
             rounds = len(proxypool.proxy_test) // cpus
@@ -305,10 +305,12 @@ class proxypool:
                 
                 while not Q.empty():
                     check = Q.get()
-                    print('Q.get():', check)
+                    #print('Q.get():', check)
                     if not check[1]:
+                        print('check fail')
                         return False
             else:
+                print('check pass')
                 return True
         else:
             for t in proxypool.proxy_test:
@@ -316,18 +318,20 @@ class proxypool:
                 valid_proxy = True
                 try:
                     self.response = sess.get(t, timeout=30, proxies=p)
-                    print('checking', p,'@', t,'get response.status_code', self.response)
+                    #print('checking', p,'@', t,'get response.status_code', self.response)
                     sess.close()
                     valid_proxy = self.response.status_code == 200
                 except Exception as err:
-                    print('checking', p,'@', t, 'Exception happened:', err)
+                    #print('checking', p,'@', t, 'Exception happened:', err)
                     if sess:
                         sess.close()
                     valid_proxy = False
                 
                 if not valid_proxy:
+                    print('check fail')
                     return False
             else:
+                print('check pass')
                 return True
         
     def random_choice_one_proxy(self):
