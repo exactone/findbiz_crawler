@@ -342,7 +342,7 @@ class proxypool:
         self.proxy_set.remove( list(p.values())[0] )
         print('while')
         while not self.check_this_proxy(p):
-            print('in while')
+            #print('in while')
             if len(proxypool.proxy_set) == 0:
                 p = {'http':None}
                 break
