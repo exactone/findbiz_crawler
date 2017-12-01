@@ -201,6 +201,8 @@ class cmpyinfo_crawler:
         self.totalCount = 1
         self.flush_threshold = 20
         self.total_json_name = "all_json_out"
+
+        self.search_error_cnt = 0
         
         
         # self.trlog = back_log(flush=False, flush_threshold=1, first_line='',logformat='', fname ='')
@@ -521,6 +523,7 @@ class cmpyinfo_crawler:
             else:
                 return True
         except CmpyinfoCrawlerError as ccerr:
+            self.search_error_cnt = self.search_error_cnt + 1
             self.exception_happened = True
             self.tasklog.log(mode='manual', in_log = "Exception @ first_connection()")
             print(ccerr)
@@ -1029,7 +1032,7 @@ class cmpyinfo_crawler:
             self.results = defaultdict(list)
             item_last = item_count
             
-        return self.results
+        #return self.results
 
 
 # In[6]:
@@ -1781,13 +1784,15 @@ for t in task:
     print("task ", t[0], ": ", t[1], "@", t[2])
     print("======================================")
     
-    
+    crawler.search_error_cnt = 0
     crawler.set_form_data_url1(mode = 0, currentPage = 1)
-    while not crawler.first_connection():
+    while not crawler.first_connection() and crawler.search_error_cnt < 6:
         crawler.change_proxy()
+    crawler.search_error_cnt = 0
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
     crawler.parse_and_gen_schema(1, crawler.totalPage)
+    
     #if crawler.proxy_tick < 0:
     #    import random
     #    time.sleep(random.randint(50,70))
