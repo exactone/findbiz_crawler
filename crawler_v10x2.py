@@ -1788,6 +1788,10 @@ for t in task:
     crawler.set_form_data_url1(mode = 0, currentPage = 1)
     while not crawler.first_connection() and crawler.search_error_cnt < 6:
         crawler.change_proxy()
+
+    if not crawler.search_error_cnt < 6:
+        crawler.search_error_cnt = 0
+        continue
     crawler.search_error_cnt = 0
     #time.sleep(random.choice([5,5.5,6,7,10,3,5,4,7,7,1]))
     crawler.resolve_page()
