@@ -510,12 +510,15 @@ class cmpyinfo_crawler:
 
         
         # 同一統編可有多個結果
-        hrefs = selector.xpath('//*[@id="vParagraph"]/div[@class="panel panel-default"]/div[@class="panel-heading companyName"]/a')
+        #hrefs = selector.xpath('//*[@id="vParagraph"]/div[@class="panel panel-default"]/div[@class="panel-heading companyName"]/a')
+        hrefs = selector.xpath('//*[@id="vParagraph"]/div[@class="panel panel-default"]/div[2]/span')
         del self.oncontextmenu
         self.oncontextmenu = list()
         for h in hrefs:
-            if h.attrib['oncontextmenu'] not in self.oncontextmenu:
+            #if h.attrib['oncontextmenu'] not in self.oncontextmenu:
+            if 'oncontextmenu' in h.attrib and h.attrib['oncontextmenu'] not in self.oncontextmenu:
                 self.oncontextmenu.append(h.attrib['oncontextmenu'])
+
 
         try:
             if not self.oncontextmenu:
