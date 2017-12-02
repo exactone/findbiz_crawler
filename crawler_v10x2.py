@@ -161,6 +161,7 @@ class cmpyinfo_crawler:
         self.banKey = None
         self.estbId = None
         self.objectId = None
+        self.objectId64 = None
         
         self.querytype = None
         #self.cmpy_type = None
@@ -274,8 +275,15 @@ class cmpyinfo_crawler:
         return prefix + self.timestr(self.this_round_end - self.this_round_sta)
 
     def get_banKey_objectId(self, attri):
+        def objectId_base64(objectId):
+            import base64
+            b_objectId = str.encode(objectId) # str to byte str
+            encoded_b_objectId = base64.b64encode(b_objectId)
+            return encoded_b_objectId.decode('utf8')
+            
         # 必須透過objectId來決定要如何填入header
         self.objectId = (attri.replace("javascript:qryDetail('","")).replace("', true);return false;","")
+        self.objectId64 = objectId_base64(self.objectId)
         self.querytype = self.objectId[0:2]
         #self.cmpy_type = cmpyinfo_crawler.cmpy_type_dict[self.querytype]
         
@@ -553,7 +561,7 @@ class cmpyinfo_crawler:
             'brBanNo':str(self.brBanNo),
             'banKey':str(self.banKey),
             'estbId':str(self.estbId),
-            'objectId':str(self.objectId),
+            'objectId':str(self.objectId64),
             'CPage':'',
             'brCmpyPage':'',
             'eng':'',
